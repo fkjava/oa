@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.fkjava.oa</groupId>
+	<artifactId>oa</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<!-- 这种项目里面，src是没有作用的，只是为了被继承和管理子模块 -->
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.4.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<!-- 源代码的字符编码 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- 生成的报告的字符编码 -->
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<!-- 指定JDK的版本，可选：1.8、9、10 -->
+		<java.version>10</java.version>
+		<!-- Java 9/10要加上下面这个参数，如果不是Java 9/10则要删除才能正常使用 -->
+		<spring-boot.run.jvmArguments>--add-modules java.xml.bind</spring-boot.run.jvmArguments>
+	</properties>
+
+
+	<dependencies>
+		<!-- JPA的依赖 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<!-- 表示项目为一个WEB项目 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- 加上以后，才不会提示JSTL相关的类找不到 -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<!-- 加入Servlet API的依赖 -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<!-- Tomcat自带的，不要打包 -->
+			<scope>provided</scope>
+		</dependency>
+		<!-- 增加JSP支持 -->
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<!-- 如果在Tomcat里面运行，那么是由Tomcat提供的 -->
+			<!-- 如果在mvn命令直接运行，该依赖也会加入类路径 -->
+			<scope>provided</scope>
+		</dependency>
+		<!-- 数据库驱动 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- 单元测试的工具 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- 加上此模块以后，其实就是让Spring Boot能够实现【热部署】，修改文件马上生效 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+
+
+	<!-- 列出一堆的子模块 -->
+	<modules>
+		<module>commons</module>
+		<module>config</module>
+		<module>identity</module>
+	</modules>
+</project>
