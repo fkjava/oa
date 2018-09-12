@@ -22,5 +22,27 @@
 			<artifactId>zTree</artifactId>
 			<version>3.5.28</version>
 		</dependency>
+
+		<!-- 页面装饰器 -->
+		<dependency>
+			<groupId>org.sitemesh</groupId>
+			<artifactId>sitemesh</artifactId>
+			<version>3.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+		</dependency>
+		<!-- 加入Servlet API的依赖 -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<!-- Tomcat自带的，不要打包 -->
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>
