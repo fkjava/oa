@@ -21,76 +21,73 @@
 </style>
 </head>
 <body>
-	<!-- 占满屏幕 -->
-	<div class="container-fluid">
-		<div class="col-md-6 role-list">
-			<table class="table">
-				<thead>
-					<tr>
-						<th>名称</th>
-						<th>KEY</th>
-						<th>操作</th>
+	<div class="col-md-6 role-list">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>名称</th>
+					<th>KEY</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach items="${roles }" var="r">
+					<tr data-id="${r.id }">
+						<td class="name">${r.name }</td>
+						<td class="roleKey">${r.roleKey }</td>
+						<td>
+						<c:if test="${not r.fixed}">
+							<a class="btn btn-primary btn-xs" 
+								onclick="showToForm(this.parentNode.parentNode)">
+								<span class="glyphicon glyphicon-edit"></span>
+								修改
+							</a>
+							<a class="btn btn-danger btn-xs"
+								onclick="deleteRole(this.parentNode.parentNode)">
+								<span class="glyphicon glyphicon-remove"></span>
+								删除
+							</a>
+						</c:if>
+						</td>
 					</tr>
-				</thead>
-				<tbody>
-					<c:forEach items="${roles }" var="r">
-						<tr data-id="${r.id }">
-							<td class="name">${r.name }</td>
-							<td class="roleKey">${r.roleKey }</td>
-							<td>
-							<c:if test="${not r.fixed}">
-								<a class="btn btn-primary btn-xs" 
-									onclick="showToForm(this.parentNode.parentNode)">
-									<span class="glyphicon glyphicon-edit"></span>
-									修改
-								</a>
-								<a class="btn btn-danger btn-xs"
-									onclick="deleteRole(this.parentNode.parentNode)">
-									<span class="glyphicon glyphicon-remove"></span>
-									删除
-								</a>
-							</c:if>
-							</td>
-						</tr>
-					</c:forEach>
-				</tbody>
-			</table>
-		</div>
-		<div class="col-md-6 role-form">
-			<form class="form-horizontal" method="post" id="detailForm">
-				<input name="id" id="id" value="" type="hidden"/>
-				<div class="form-group">
-					<label for="inputName" class="col-sm-2 control-label">角色名称</label>
-					<div class="col-sm-10">
-						<input class="form-control" 
-							id="inputName" 
-							placeholder="角色名称" 
-							name="name"
-							required="required"/>
-					</div>
+				</c:forEach>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-6 role-form">
+		<form class="form-horizontal" method="post" id="detailForm">
+			<input name="id" id="id" value="" type="hidden"/>
+			<div class="form-group">
+				<label for="inputName" class="col-sm-3 control-label">角色名称</label>
+				<div class="col-sm-9">
+					<input class="form-control" 
+						id="inputName" 
+						placeholder="角色名称" 
+						name="name"
+						required="required"/>
 				</div>
-				<div class="form-group">
-					<label for="inputRoleKey" 
-						class="col-sm-2 control-label">KEY</label>
-					<div class="col-sm-10">
-						<%-- 正则表都是限制KEY不能是ROLE_开头的，(?!)用于取反 --%>
-						<input class="form-control" 
-							id="inputRoleKey" 
-							placeholder="角色的唯一键" 
-							name="roleKey" 
-							onkeypress="onKeyInput(event)"
-							required="required"
-							pattern="(?!ROLE_).*"/>
-					</div>
+			</div>
+			<div class="form-group">
+				<label for="inputRoleKey" 
+					class="col-sm-3 control-label">KEY</label>
+				<div class="col-sm-9">
+					<%-- 正则表都是限制KEY不能是ROLE_开头的，(?!)用于取反 --%>
+					<input class="form-control" 
+						id="inputRoleKey" 
+						placeholder="角色的唯一键" 
+						name="roleKey" 
+						onkeypress="onKeyInput(event)"
+						required="required"
+						pattern="(?!ROLE_).*"/>
 				</div>
-				<div class="form-group">
-					<div class="col-sm-offset-2 col-sm-10">
-						<button type="submit" class="btn btn-primary">保存</button>
-						<button type="button" class="btn btn-default" onclick="resetForm(event)">复位</button>
-					</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="submit" class="btn btn-primary">保存</button>
+					<button type="button" class="btn btn-default" onclick="resetForm(event)">复位</button>
 				</div>
-			</form>
-		</div>
+			</div>
+		</form>
 	</div>
 	<script type="text/javascript">
 	var onKeyInput = function(event){
