@@ -5,13 +5,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
 <title>角色管理</title>
-
-<link href="${ctx }/webjars/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
-
-<script type="text/javascript" src="${ctx }/webjars/jquery/1.11.1/jquery.min.js"></script>
-<script type="text/javascript" src="${ctx }/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<meta name="decorator" content="/WEB-INF/layouts/main.jsp">
 <style type="text/css">
 	.role-list
 	{
@@ -121,6 +116,7 @@
 	// 在表单中显示要修改的角色
 	var showToForm = function(tr){
 		var id = $(tr).attr("data-id");
+		// 选择器的第二个参数，表示在哪个元素里面根据选择器查询子元素
 		var name = $(".name", tr).text();
 		var roleKey = $(".roleKey", tr).text();
 		$("#detailForm #id").val(id);

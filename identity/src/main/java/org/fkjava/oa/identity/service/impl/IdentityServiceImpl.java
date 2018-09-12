@@ -72,6 +72,7 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 
 	@Override
 	public List<Role> findAllRoles() {
+		// 使用roleKey排序
 		Sort sort = Sort.by(Order.asc("roleKey"));
 		List<Role> roles = this.roleDao.findAll(sort);
 		return roles;
