@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.fkjava.oa.identity.dao.RoleDao;
+import org.fkjava.oa.identity.dao.UserDao;
 import org.fkjava.oa.identity.domain.Role;
+import org.fkjava.oa.identity.domain.User;
 import org.fkjava.oa.identity.service.IdentityService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 
 	@Autowired
 	private RoleDao roleDao;
+	@Autowired
+	private UserDao userDao;
 
 	@Override
 	@Transactional
@@ -38,6 +42,7 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 	}
 
 	@Override
+	@Transactional
 	public void save(Role role) {
 		// 判断id是否存在，如果有id则表示修改；否则表示新增
 		if (StringUtils.isEmpty(role.getId())) {
@@ -77,9 +82,43 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 		List<Role> roles = this.roleDao.findAll(sort);
 		return roles;
 	}
-	
+
 	@Override
 	public void deleteRole(String id) {
 		this.roleDao.deleteById(id);
+	}
+
+	@Transactional(transactionManager = "transactionManager")
+	@Override
+	public void save(User user) {
+		if (StringUtils.isEmpty(user.getId())) {
+			user.setId(null);
+		}
+		// 1.检查是否有id，如果有id表示修改，否则是新增
+		// 2.不管是新增还是修改，都必须确保登录名是唯一键
+		if (user.getId() != null) {
+			// 修改
+			User old = this.userDao.findByLoginName(user.getLoginName());
+			if (old != null) {
+				if (user.getId().equals(old.getId())) {
+					// id相同，表示同一个用户，可以修改
+					this.userDao.save(user);
+				} else {
+					throw new IllegalArgumentException("用户的登录名已经被其他用户占用，不能修改");
+				}
+			} else {
+				this.userDao.save(user);
+			}
+		} else {
+			// 新增
+			// 1.要根据登录名查询User对象
+			User old = this.userDao.findByLoginName(user.getLoginName());
+			if (old == null) {
+				// 用户的登录名未被占用
+				this.userDao.save(user);
+			} else {
+				throw new IllegalArgumentException("用户的登录名已经被其他用户占用，不能添加");
+			}
+		}
 	}
 }

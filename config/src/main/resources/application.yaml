@@ -1,0 +1,23 @@
+# Data Source
+spring:
+    datasource:
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3306/oa?useSSL=false
+        username: root
+        password: 1234
+
+# JPA Config
+    jpa:
+        hibernate:
+            ddl-auto: update
+        database: MYSQL
+        properties:
+            hibernate.dialect: org.hibernate.dialect.MySQL57Dialect
+
+# Spring Data Config
+        repositories:
+            enabled: true
+
+# Web MVC ViewResolver Config
+    mvc.view.prefix: /WEB-INF/views/
+    mvc.view.suffix: .jsp
