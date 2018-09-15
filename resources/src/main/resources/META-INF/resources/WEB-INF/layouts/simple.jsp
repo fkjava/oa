@@ -23,9 +23,6 @@
 	<script type="text/javascript" src="${ctx }/webjars/jquery/1.11.1/jquery.min.js"></script>
 	<script type="text/javascript" src="${ctx }/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-	<%-- _csrf_header、_csrf是为了解决AJAX结合Spring Security的时候，出现403错误的。 --%>
-	<meta name="_csrf_header" content="${_csrf.headerName}"/>
-	<meta name="_csrf" content="${_csrf.token}"/>
 	<sitemesh:write property="head"/>
   </head>
 
@@ -44,14 +41,8 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="index.html#">Dashboard</a></li>
-            <li><a href="index.html#">Settings</a></li>
-            <li><a href="index.html#">Profile</a></li>
             <li><a href="index.html#">Help</a></li>
           </ul>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Search...">
-          </form>
         </div>
       </div>
     </nav>
@@ -60,16 +51,9 @@
 	<!-- 内容主体 -->
     <div class="container-fluid">
       <div class="row">
-      	<!-- 侧边栏 -->
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="active"><a href="${ctx }/identity/role">角色管理 <span class="sr-only">(current)</span></a></li>
-            <li><a href="${ctx }/identity/user">用户管理</a></li>
-          </ul>
-        </div>
         
         <!-- 业务展示主体 -->
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="col-sm-12 main">
           <sitemesh:write property="body"/>
         </div>
       </div>
@@ -81,16 +65,5 @@
     <script src="${ctx }/static/js/vendor/holder.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="${ctx }/static/js/ie10-viewport-bug-workaround.js"></script>
-    
-    <script type="text/javascript">
-    $(function () {
-        var token = $("meta[name='_csrf']").attr("content");
-        var header = $("meta[name='_csrf_header']").attr("content");
-        // ajaxSend是在发送AJAX之前要调用的代码
-        $(document).ajaxSend(function(e, xhr, options) {
-    	    xhr.setRequestHeader(header, token);
-        });
-    });
-    </script>
   </body>
 </html>

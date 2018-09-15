@@ -39,6 +39,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<!-- 增加Spring Security的依赖 -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<!-- 加上以后，才不会提示JSTL相关的类找不到 -->
 		<dependency>
 			<groupId>javax.servlet</groupId>

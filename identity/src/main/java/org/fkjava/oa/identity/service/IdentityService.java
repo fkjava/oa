@@ -1,6 +1,7 @@
 package org.fkjava.oa.identity.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.fkjava.oa.identity.domain.Role;
 import org.fkjava.oa.identity.domain.User;
@@ -24,5 +25,7 @@ public interface IdentityService {
 	User findUserById(String id);
 
 	Result separation(String id);
+
+	Optional<User> findUserByLoginName(String loginName);
 
 }

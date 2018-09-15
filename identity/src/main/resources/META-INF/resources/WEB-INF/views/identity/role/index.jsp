@@ -57,6 +57,7 @@
 	<div class="col-md-6 role-form">
 		<form class="form-horizontal" method="post" id="detailForm">
 			<input name="id" id="id" value="" type="hidden"/>
+			<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 			<div class="form-group">
 				<label for="inputName" class="col-sm-3 control-label">角色名称</label>
 				<div class="col-sm-9">

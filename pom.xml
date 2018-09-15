@@ -38,5 +38,6 @@
 		<module>config</module>
 		<module>identity</module>
 		<module>resources</module>
+		<module>security</module>
 	</modules>
 </project>

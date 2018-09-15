@@ -31,6 +31,7 @@
     <div class="col-md-12">
 	    <form action="../user" class="form-horizontal" method="post" id="detailForm" onsubmit="return submitForm()" >
 			<input name="id" id="id" value="${user.id }" type="hidden"/>
+			<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 			<div class="form-group">
 				<label for="inputName" class="col-sm-3 control-label">姓名</label>
 				<div class="col-sm-9">

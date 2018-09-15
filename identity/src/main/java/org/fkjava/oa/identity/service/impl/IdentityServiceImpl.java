@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -30,6 +31,8 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 	private RoleDao roleDao;
 	@Autowired
 	private UserDao userDao;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	@Transactional
@@ -122,6 +125,12 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 		}
 		// 1.检查是否有id，如果有id表示修改，否则是新增
 		// 2.不管是新增还是修改，都必须确保登录名是唯一键
+
+		if (!StringUtils.isEmpty(user.getPassword())) {
+			// 有密码的时候，把密码加密，需要把PasswordEncoder注入进来
+			String encodedPassword = this.passwordEncoder.encode(user.getPassword());
+			user.setPassword(encodedPassword);
+		}
 		if (user.getId() != null) {
 			// 根据id找到现有的User对象，有部分数据可能未修改
 			User oldUser = this.userDao.findById(user.getId()).get();
@@ -205,7 +214,7 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 			user.setLoginName(null);
 			user.setRoles(null);
 			user.setStatus(UserStatus.SEPARATION);
-			
+
 			this.userDao.save(user);
 
 			Result result = new Result();
@@ -218,5 +227,11 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 			result.setStatus(Result.STATUS_ERROR);
 			return result;
 		}
+	}
+
+	@Override
+	public Optional<User> findUserByLoginName(String loginName) {
+		UserStatus status = UserStatus.SEPARATION;
+		return this.userDao.findByLoginNameAndStatusNot(loginName, status);
 	}
 }
