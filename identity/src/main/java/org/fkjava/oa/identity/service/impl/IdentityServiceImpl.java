@@ -1,15 +1,22 @@
 package org.fkjava.oa.identity.service.impl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.fkjava.oa.identity.dao.RoleDao;
 import org.fkjava.oa.identity.dao.UserDao;
 import org.fkjava.oa.identity.domain.Role;
 import org.fkjava.oa.identity.domain.User;
+import org.fkjava.oa.identity.domain.User.UserStatus;
 import org.fkjava.oa.identity.service.IdentityService;
+import org.fkjava.oa.identity.vo.Result;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -88,15 +95,42 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 		this.roleDao.deleteById(id);
 	}
 
-	@Transactional(transactionManager = "transactionManager")
+	@Transactional()
 	@Override
 	public void save(User user) {
+		// 解决的问题：固定角色不要界面选择，直接加入！
+		// 查询所有固定的Role，加入到User对象里面
+		// 注意：如果有重复则要去掉！
+		Set<Role> roles = this.roleDao.findByFixedTrue();
+		// 根据用户传入的所有角色，把Role对象查询出来
+		Set<String> ids = new HashSet<>();
+		user.getRoles().forEach(role -> ids.add(role.getId()));
+		List<Role> userRoles = this.roleDao.findAllById(ids);
+
+		// 合并两个Role集合
+		// 第一个集合是固定Role
+		// 第二个集合是用户传入的Role
+		// roles合并以后，就包含了：用户传入的Role、固定的Role，并且不会重复！
+		roles.addAll(userRoles);
+
+		// 把用户传入的Role集合，改为从数据库查询出来的Role集合，避免出现外键约束失败的问题
+		user.getRoles().clear();
+		user.getRoles().addAll(roles);
+
 		if (StringUtils.isEmpty(user.getId())) {
 			user.setId(null);
 		}
 		// 1.检查是否有id，如果有id表示修改，否则是新增
 		// 2.不管是新增还是修改，都必须确保登录名是唯一键
 		if (user.getId() != null) {
+			// 根据id找到现有的User对象，有部分数据可能未修改
+			User oldUser = this.userDao.findById(user.getId()).get();
+			if (StringUtils.isEmpty(user.getPassword())) {
+				user.setPassword(oldUser.getPassword());
+			}
+			if (user.getStatus() == null) {
+				user.setStatus(oldUser.getStatus());
+			}
 			// 修改
 			User old = this.userDao.findByLoginName(user.getLoginName());
 			if (old != null) {
@@ -115,10 +149,74 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 			User old = this.userDao.findByLoginName(user.getLoginName());
 			if (old == null) {
 				// 用户的登录名未被占用
+				user.setStatus(UserStatus.NORMAL);
 				this.userDao.save(user);
 			} else {
 				throw new IllegalArgumentException("用户的登录名已经被其他用户占用，不能添加");
 			}
+		}
+	}
+
+	// 写完此方法以后，建议重构用户保存的判断，保证登录名的校验逻辑是一致的。
+	@Override
+	public Result checkLoginName(String loginName, String id) {
+		Result result = new Result();
+		if (StringUtils.isEmpty(id)) {
+			// id为空表示新增用户，不需要判断id
+			User old = this.userDao.findByLoginName(loginName);
+			if (old == null) {
+				result.setStatus(Result.STATUS_OK);
+			} else {
+				result.setStatus(Result.STATUS_ERROR);
+			}
+		} else {
+			// 修改用户，要判断id
+			User old = this.userDao.findByLoginName(loginName);
+			if (old == null) {
+				result.setStatus(Result.STATUS_OK);
+			} else if (old.getId().equals(id)) {
+				result.setStatus(Result.STATUS_WARN);
+			} else {
+				result.setStatus(Result.STATUS_ERROR);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public Page<User> findUsers(Integer pageNumber) {
+		// 以登录名升序、以姓名降序
+		Sort sort = Sort.by(Order.asc("loginName"), Order.desc("name"));
+		Pageable pageable = PageRequest.of(pageNumber, 2, sort);
+		// 如果条件复杂，需要自己扩展DAO
+		Page<User> page = this.userDao.findAll(pageable);
+		return page;
+	}
+
+	@Override
+	public User findUserById(String id) {
+		return this.userDao.findById(id).orElse(null);
+	}
+
+	@Override
+	public Result separation(String id) {
+		User user = this.userDao.findById(id).orElse(null);
+		if (user != null) {
+			user.setLoginName(null);
+			user.setRoles(null);
+			user.setStatus(UserStatus.SEPARATION);
+			
+			this.userDao.save(user);
+
+			Result result = new Result();
+			result.setMessage("操作成功");
+			result.setStatus(Result.STATUS_OK);
+			return result;
+		} else {
+			Result result = new Result();
+			result.setMessage("非法请求，请从页面正常点击按钮来实现离职！");
+			result.setStatus(Result.STATUS_ERROR);
+			return result;
 		}
 	}
 }

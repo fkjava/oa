@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.fkjava.oa.identity.domain.Role;
 import org.fkjava.oa.identity.domain.User;
+import org.fkjava.oa.identity.vo.Result;
+import org.springframework.data.domain.Page;
 
 public interface IdentityService {
 
@@ -14,5 +16,13 @@ public interface IdentityService {
 	void deleteRole(String id);
 
 	void save(User user);
+
+	Result checkLoginName(String loginName, String id);
+
+	Page<User> findUsers(Integer pageNumber);
+
+	User findUserById(String id);
+
+	Result separation(String id);
 
 }
