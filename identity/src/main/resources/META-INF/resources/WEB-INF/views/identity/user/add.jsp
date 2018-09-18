@@ -282,6 +282,7 @@
 		var id = $("#id").val();
 		var loginName = $("#inputLoginName").val();
 		if(loginName.length < 3){
+			setResultStatus("#loginNameResult", 1);
 			return;
 		}
 		

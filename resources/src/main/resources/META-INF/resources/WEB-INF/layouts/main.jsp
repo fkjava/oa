@@ -88,7 +88,9 @@
         var header = $("meta[name='_csrf_header']").attr("content");
         // ajaxSend是在发送AJAX之前要调用的代码
         $(document).ajaxSend(function(e, xhr, options) {
-    	    xhr.setRequestHeader(header, token);
+        	if( token && header){
+    	    	xhr.setRequestHeader(header, token);
+        	}
         });
     });
     </script>
