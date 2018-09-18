@@ -39,5 +39,6 @@
 		<module>identity</module>
 		<module>resources</module>
 		<module>security</module>
+		<module>menu</module>
 	</modules>
 </project>

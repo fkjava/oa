@@ -65,6 +65,7 @@
           <ul class="nav nav-sidebar">
             <li class="active"><a href="${ctx }/identity/role">角色管理 <span class="sr-only">(current)</span></a></li>
             <li><a href="${ctx }/identity/user">用户管理</a></li>
+            <li><a href="${ctx }/system/menu">菜单配置</a></li>
           </ul>
         </div>
         
