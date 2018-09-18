@@ -47,8 +47,16 @@
             <li><a href="index.html#">Dashboard</a></li>
             <li><a href="index.html#">Settings</a></li>
             <li><a href="index.html#">Profile</a></li>
-            <li><a href="index.html#">Help</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
           </ul>
+          <script type="text/javascript">
+          var doLogout = function(){
+        	  $("#logoutForm").submit();
+          };
+          </script>
+          <form style="display: none;" id="logoutForm" method="post" action="${ctx }/security/do-logout">
+          	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+          </form>
           <form class="navbar-form navbar-right">
             <input type="text" class="form-control" placeholder="Search...">
           </form>
