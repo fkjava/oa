@@ -10,4 +10,6 @@ public interface MenuService {
 
 	List<Menu> findAllMenus();
 
+	List<Menu> findCurrentUserMenuTree();
+
 }

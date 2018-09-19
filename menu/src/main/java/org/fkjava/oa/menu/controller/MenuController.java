@@ -10,16 +10,18 @@ import org.fkjava.oa.menu.domain.Menu;
 import org.fkjava.oa.menu.service.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 @RequestMapping("/system/menu")
+@SessionAttributes("my_menus")
 public class MenuController {
 
 	@Autowired
@@ -67,5 +69,22 @@ public class MenuController {
 		this.menuService.save(menu);
 
 		return "redirect:/system/menu";
+	}
+
+	@GetMapping("tree")
+	@ResponseBody
+	public List<Menu> tree(//
+			@SessionAttribute(value = "my_menus", required = false) List<Menu> sessionMenus, //
+			Model model) {
+		// 在Session里面如果没有菜单，那么就调用业务逻辑层查询
+		//if (sessionMenus == null) {
+			log.debug("Session里面没有菜单，到业务逻辑层查询");
+			List<Menu> menus = this.menuService.findCurrentUserMenuTree();
+			model.addAttribute("my_menus", menus);
+			return menus;
+		//} else {
+		//	log.debug("Session里面有菜单，直接返回");
+		//	return sessionMenus;
+		//}
 	}
 }

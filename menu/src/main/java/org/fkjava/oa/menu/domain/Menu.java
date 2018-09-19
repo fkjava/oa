@@ -8,6 +8,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 import org.fkjava.oa.commons.domain.UUIDEntity;
@@ -35,6 +36,7 @@ public class Menu extends UUIDEntity {
 	// 关系由parent来维护
 	@OneToMany(mappedBy = "parent")
 	@JsonProperty("children") // 生成的JSON取一个别名
+	@OrderBy("name") // 查询集合的时候，加上order by关键字
 	private List<Menu> child;
 	// 角色和菜单的关系是多对多
 	@ManyToMany

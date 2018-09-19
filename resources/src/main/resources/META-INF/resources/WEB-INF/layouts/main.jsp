@@ -27,6 +27,13 @@
 	<%-- _csrf_header、_csrf是为了解决AJAX结合Spring Security的时候，出现403错误的。 --%>
 	<meta name="_csrf_header" content="${_csrf.headerName}"/>
 	<meta name="_csrf" content="${_csrf.token}"/>
+	<style type="text/css">
+	.nav-sidebar-title
+	{
+		margin-left: -15px;
+		font-size: 18px;
+	}
+	</style>
 	<sitemesh:write property="head"/>
   </head>
 
@@ -74,23 +81,53 @@
     <!-- 导航条结束 -->
 
 	<!-- 内容主体 -->
-    <div class="container-fluid">
-      <div class="row">
-      	<!-- 侧边栏 -->
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="active"><a href="${ctx }/identity/role">角色管理 <span class="sr-only">(current)</span></a></li>
-            <li><a href="${ctx }/identity/user">用户管理</a></li>
-            <li><a href="${ctx }/system/menu">菜单配置</a></li>
-          </ul>
-        </div>
-        
-        <!-- 业务展示主体 -->
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <sitemesh:write property="body"/>
-        </div>
-      </div>
-    </div>
+	<div class="container-fluid">
+	    <div class="row">
+	        <!-- 侧边栏 -->
+	        <div class="col-sm-3 col-md-2 sidebar menu-tree">
+	            <%-- <ul class="nav nav-sidebar">
+	                <li class="active"><a href="${ctx }/identity/role">角色管理 <span class="sr-only">(current)</span></a></li>
+	                <li><a href="${ctx }/identity/user">用户管理</a></li>
+	                <li><a href="${ctx }/system/menu">菜单配置</a></li>
+	            </ul> --%>
+	        </div>
+            <script type="text/javascript">
+            	// 通过AJAX读取菜单
+            	$.ajax({
+            		url: "${ctx}/system/menu/tree",
+            		success: function(data, status, xhr){
+            			// 返回List类型，本身就是一个集合，不需要再使用responseJSON
+            			//data = data.responseJSON;
+            			
+            			for( var i = 0; i < data.length; i ++){
+            				// 一级菜单
+            				var menu = data[i];
+            				var html = "<span class='nav-sidebar-title'>" + menu.name + "</span>\n";
+            				html += "<ul class='nav nav-sidebar'>\n";
+            				
+            				var subMenus = menu.children;
+            				for( var j = 0; j < subMenus.length; j++ )
+            				{
+            					var subMenu = subMenus[j];
+            					html += "    <li><a href='${ctx }" + subMenu.url + "'>" + subMenu.name + "</a></li>\n";
+            				}
+            				html += "</ul>\n"
+            				// 把生成的HTML追加到菜单的显示位置
+            				$(html).appendTo($(".menu-tree"));
+            			}
+            		},
+            		error: function(data, status, xhr){
+            			
+            		}
+            	});
+            </script>
+	
+	        <!-- 业务展示主体 -->
+	        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+	            <sitemesh:write property="body"/>
+	        </div>
+	    </div>
+	</div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

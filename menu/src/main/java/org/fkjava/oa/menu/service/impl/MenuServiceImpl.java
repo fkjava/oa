@@ -1,11 +1,17 @@
 package org.fkjava.oa.menu.service.impl;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.fkjava.oa.menu.dao.MenuRepository;
 import org.fkjava.oa.menu.domain.Menu;
 import org.fkjava.oa.menu.service.MenuService;
+import org.fkjava.oa.security.vo.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -55,6 +61,87 @@ public class MenuServiceImpl implements MenuService {
 	@Override
 	public List<Menu> findAllMenus() {
 		// 只把一级菜单查询出来
-		return this.menuRepository.findByParentNull();
+		return this.menuRepository.findByParentNullOrderByName();
+	}
+
+	@Override
+	public List<Menu> findCurrentUserMenuTree() {
+		// 1.获取当前用户，Spring Security在登录以后，会把当前的用户信息，存储在SecurityContextHolder里面。
+		// 存储的本质，是ThreadLocal类型的对象，ThreadLocal是一个线程隔离的对象，存储在里面的数据仅在当前线程有效。
+		UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		// 2.根据用户的角色查询所有菜单
+		List<Menu> allTopMenus = this.menuRepository.findByParentNullOrderByName();// 全部一级菜单
+		List<Menu> subMenus = this.menuRepository.findByRolesIn(ud.getRoles());// 全部有权限的菜单
+		// 把有权限的菜单里面，要过滤掉上级菜单不是在allTopMenus集合里面的
+		// 只要Parent对象在allTopMenus的二级菜单
+		List<Menu> newSubMenus = new LinkedList<>();
+		subMenus.stream().filter(sm -> {
+			for (Menu p : allTopMenus) {
+				if (sm.getParent() != null// 子菜单要有上级
+						// 子菜单的上级的id跟一级菜单的id相同
+						&& sm.getParent().getId().equals(p.getId())) {
+					// 返回true表示需要！
+					return true;
+				}
+			}
+			// 返回false表示不要的
+			return false;
+		})//
+				.forEach(m -> newSubMenus.add(m));
+
+		// 3.整理得到的二级菜单，把一级菜单也获取出来
+		// 不要直接把持久化对象传到Session（菜单要存储在Session）
+		// 所以在这里的过程中要创建新的Menu对象（脱离Hibernate管理）
+		// 以一级菜单的id为key、value是一级菜单
+		// 但是在一级菜单里面，有child属性包含二级菜单
+		Map<String, Menu> menus = new HashMap<>();
+		newSubMenus.forEach(m -> {
+			Menu parent = m.getParent();
+			String parentId = parent.getId();
+			if (!menus.containsKey(parentId)) {
+				// 创建新的菜单
+				Menu newParent = new Menu();
+				newParent.setChild(new LinkedList<>());
+				newParent.setId(parentId);
+				newParent.setMethod(parent.getMethod());
+				newParent.setName(parent.getName());
+				newParent.setUrl(parent.getUrl());
+				// 经过这次循环以后，menus里面全部都是一级菜单，而且不会重复
+				menus.put(parentId, newParent);
+			}
+		});
+
+		newSubMenus.forEach(m -> {
+			// 直接在menus集合里面获取一级菜单
+			String parentId = m.getParent().getId();
+			Menu parent = menus.get(parentId);
+
+			Menu newChild = new Menu();
+			newChild.setId(m.getId());
+			newChild.setMethod(m.getMethod());
+			newChild.setName(m.getName());
+			newChild.setUrl(m.getUrl());
+
+			// 经过此循环，所有二级菜单都会放入对应的一级菜单里面
+			parent.getChild().add(newChild);
+		});
+
+		List<Menu> result = new LinkedList<>();
+		result.addAll(menus.values());
+
+		result.sort((v1, v2) -> {
+			return v1.getName().compareTo(v2.getName());
+		});
+
+		// 把结果设置为不可改变的list
+		result.forEach(parent -> {
+			parent.getChild().sort((v1, v2) -> {
+				return v1.getName().compareTo(v2.getName());
+			});
+			parent.setChild(Collections.unmodifiableList(parent.getChild()));
+		});
+		result = Collections.unmodifiableList(result);
+
+		return result;
 	}
 }
