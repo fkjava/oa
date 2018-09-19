@@ -110,7 +110,7 @@ function removeHoverDom(treeId, treeNode) {
 var showRemoveButton = function(treeId, treeNode){
 	//console.log(treeNode);
 	// 如果没有下级节点，显示删除按钮，否则不显示！
-	if(treeNode.children.length > 0){
+	if(treeNode.children && treeNode.children.length > 0){
 		return false;
 	}else{
 		return true;
