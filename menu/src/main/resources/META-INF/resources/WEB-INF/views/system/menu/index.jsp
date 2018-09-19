@@ -117,10 +117,38 @@ var showRemoveButton = function(treeId, treeNode){
 	}
 };
 
+// 当选中某个节点的时候，在表单里面显示详情
 var showDetailInForm = function(treeId, treeNode){
-	$("#menuForm #id").val(treeNode.id);
+	// 判断是否有id，没有id的时候，需要把id置为空
+	// 如果不处理，那么点击已经存在的节点，然后再来新增的时候，会把新增作为修改。
+	if( treeNode.id ){
+		$("#menuForm #id").val(treeNode.id);
+	}else
+	{
+		$("#menuForm #id").val("");
+	}
 	$("#menuForm #inputName").val(treeNode.name);
 	$("#menuForm input[name='url']").val(treeNode.url);
+	
+	// 先把所有选中的请求方法去掉，如果是复选框就一定要进行处理
+	// 单选框因为只会选中一个，所以不去掉也没有问题
+	//$("#menuForm input[name='method']").prop("checked", false);
+	// 然后再根据节点的请求方法选中特定的单选框
+	$("#menuForm input[name='method'][value='" + treeNode.method + "']").prop("checked", true);
+	
+	// 处理选中的角色
+	// 首先要把所有原本选中的放到【未选中】的框里面
+	// click函数，如果有参数表示绑定事件；没有参数则表示触发事件，相当于写代码点击按钮
+	$(".remove-all").click();
+	
+	// 根据根据节点的roles把右侧角色选中、移动到左侧
+	for( var i = 0; i < treeNode.roles.length; i++ ){
+		var role = treeNode.roles[i];
+		var input = $(".unselect-role-list input[value='" + role.id + "']");
+		input.prop("checked", true);
+	}
+	$(".add-selected").click();
+
 	var parentNode = treeNode.getParentNode();
 	if(parentNode){
 		$("#menuForm #parentId").val(treeNode.getParentNode().id);
@@ -134,16 +162,18 @@ var showDetailInForm = function(treeId, treeNode){
 //------------------------------------------------------------------
 
 //模拟的数据
-var nodes = [
-	{name: "父节点1", 
-	 	url: "父节点的URL",
-		open: true,// 默认打开
-		children: [
-			{name: "子节点1", url: "子节点1的URL"},
-			{name: "子节点2"}
-		]
-	}
-];
+// var nodes = [
+// 	{name: "父节点1", 
+// 	 	url: "父节点的URL",
+// 		open: true,// 默认打开
+// 		children: [
+// 			{name: "子节点1", url: "子节点1的URL"},
+// 			{name: "子节点2"}
+// 		]
+// 	}
+// ];
+// 直接把JSON字符串当做代码使用
+// var nodes = ${json};
 
 //对树型结构的设置
 var setting = {
@@ -187,6 +217,16 @@ var setting = {
 		// 当节点重命名以后的回调
 		onRename: false,
 		onSelected: showDetailInForm
+	},
+	async: {
+		enable: true,
+		url:"./menu/data",
+		// 必须要加上get才可以使用，因为安全框架中解决了CSRF问题
+		// 如果AJAX是POST的话，必须要加上一个请求头，否则禁止访问
+		type: "get"
+		//autoParam:["id", "name=n", "level=lv"],
+		//otherParam:{"otherParam":"zTreeAsyncTest"},
+		//dataFilter: filter
 	}
 };
 // $(function(){
@@ -194,7 +234,8 @@ var setting = {
 //$(document).ready(function(){
 $(function(){
 	// 初始化树形结构
-	$.fn.zTree.init($("#menuTree"), setting, nodes);
+	//$.fn.zTree.init($("#menuTree"), setting, nodes);
+	$.fn.zTree.init($("#menuTree"), setting);
 	
 	// 绑定角色选取按钮的事件
 	$(".add-selected").click(function(){
@@ -205,24 +246,26 @@ $(function(){
 			// this表示each函数处理的当前对象
 			$(this).parent().appendTo($(".selected-role-list"))
 			// 取消选中
-			$(this).attr("checked", false);
+			$(this).prop("checked", false);
 		});
 	});
 	$(".add-all").click(function(){
 		// 把右边（未选中）全部label找出来，添加到左边（已选中）。
 		// 加入左边以后，右边的会自动删除掉（相当于是移动）。
 		$(".unselect-role-list label").appendTo($(".selected-role-list"));
+		$(".selected-role-list input").prop("checked", false);
 	});
 	
 	$(".remove-selected").click(function(){
 		$(".selected-role-list label input:checked").each(function(index, input){
 			$(this).parent().appendTo($(".unselect-role-list"))
 			// 取消选中
-			$(this).attr("checked", false);
+			$(this).prop("checked", false);
 		});
 	});
 	$(".remove-all").click(function(){
 		$(".selected-role-list label").appendTo($(".unselect-role-list"));
+		$(".unselect-role-list input").prop("checked", false);
 	});
 });
 
@@ -234,7 +277,8 @@ $(function(){
 			<ul id="menuTree" class="ztree"></ul>
 		</div>
 		<div class="col-md-8">
-			<form class="form-horizontal" method="post" id="menuForm">
+			<form class="form-horizontal" method="post" id="menuForm"
+				onsubmit="return beforeSubmit()">
 				<input name="id" id="id" value="" type="hidden"/>
 				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 				<div class="form-group">
@@ -316,5 +360,26 @@ $(function(){
 	</div>
 	
 	<script type="text/javascript" src="${ctx }/webjars/zTree/3.5.28/js/jquery.ztree.all.min.js"></script>
+	<script type="text/javascript">
+	// 在form元素的onsubmit属性中调用
+	var beforeSubmit = function(){
+		try{
+			// 找到所有已选择的角色
+			var roles = $(".selected-role-list input");
+			roles.each(function(index, input){
+				// 1.勾选已选择的角色
+				$(this).prop("checked", true);
+				// 2.设置已选中的角色的name属性
+				$(this).attr("name", "roles[" + index + "].id");
+				
+				console.log($(this).attr("checked"));
+			});
+			return true;
+		}catch(e){ 
+			console.log(e);
+			return false;
+		}
+	};
+	</script>
 </body>
 </html>
