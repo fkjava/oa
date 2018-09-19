@@ -142,10 +142,12 @@ var showDetailInForm = function(treeId, treeNode){
 	$(".remove-all").click();
 	
 	// 根据根据节点的roles把右侧角色选中、移动到左侧
-	for( var i = 0; i < treeNode.roles.length; i++ ){
-		var role = treeNode.roles[i];
-		var input = $(".unselect-role-list input[value='" + role.id + "']");
-		input.prop("checked", true);
+	if(treeNode.roles){
+		for( var i = 0; i < treeNode.roles.length; i++ ){
+			var role = treeNode.roles[i];
+			var input = $(".unselect-role-list input[value='" + role.id + "']");
+			input.prop("checked", true);
+		}
 	}
 	$(".add-selected").click();
 
