@@ -59,8 +59,12 @@
             	</a>
            	</li>
            	</c:if>
-            <li><a href="#">退出登录</a></li>
+            <li><a href="#" onclick="$('#logoutForm').submit()">退出登录</a></li>
           </ul>
+          <%-- 一定要注意：URL是在SecurityConfig里面配置logoutUrl，并且一定要有csrf的隐藏域 --%>
+          <form action="${ctx }/security/do-logout" id="logoutForm" style="display: none;" method="post">
+          		<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+          </form>
           <form class="navbar-form navbar-right">
             <input type="text" class="form-control" placeholder="Search...">
           </form>
