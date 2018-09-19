@@ -110,7 +110,7 @@ function removeHoverDom(treeId, treeNode) {
 var showRemoveButton = function(treeId, treeNode){
 	//console.log(treeNode);
 	// 如果没有下级节点，显示删除按钮，否则不显示！
-	if(treeNode.children){
+	if(treeNode.children.length > 0){
 		return false;
 	}else{
 		return true;
@@ -157,6 +157,12 @@ var showDetailInForm = function(treeId, treeNode){
 		$("#menuForm #parentId").val("");
 		$("#menuForm #parentName").text("");
 	}
+};
+
+// 删除菜单，无论如何都返回false
+// 通过AJAX删除服务器的数据成功以后，再手动删除页面的菜单节点，并重置表单
+var removeMenu = function( treeId, treeNode ){
+	
 };
 
 //------------------------------------------------------------------
@@ -209,7 +215,7 @@ var setting = {
 		// 在编辑名称之前的回调
 		beforeEditName: false,
 		// 在删除的时候执行的回调
-		beforeRemove: false,
+		beforeRemove: removeMenu,
 		// 在重命名的时候执行的回调
 		beforeRename: false,
 		// 当节点删除以后的回调
@@ -352,7 +358,7 @@ $(function(){
 				<div class="form-group">
 					<div class="col-sm-offset-2 col-sm-10">
 						<button type="submit" class="btn btn-primary">保存</button>
-						<button type="reset" class="btn btn-default">复位</button>
+						<button type="button" onclick="resetForm()" class="btn btn-default">复位</button>
 					</div>
 				</div>
 			</form>
@@ -379,6 +385,22 @@ $(function(){
 			console.log(e);
 			return false;
 		}
+	};
+	
+	// 重置表单
+	var resetForm = function(){
+		$("#menuForm .remove-all").click();
+
+		$("#menuForm #id").val("");
+		$("#menuForm #parentId").val("");
+		$("#menuForm #parentName").text("");
+		$("#menuForm #inputName").val("");
+		$("#menuForm #inputUrl").val("");
+		$("#menuForm input[name='method']").prop("checked", false);
+		
+		// 取消树里面选中的节点
+		var treeObj = $.fn.zTree.getZTreeObj("menuTree");
+		treeObj.cancelSelectedNode();
 	};
 	</script>
 </body>
