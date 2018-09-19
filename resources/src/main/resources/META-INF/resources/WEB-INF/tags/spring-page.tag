@@ -49,6 +49,10 @@
         	<c:set var="begin" value="${begin -  (5 - (page.totalPages - begin))}" />
         	<c:set var="end" value="${page.totalPages - 1 }"/> 
         </c:if>
+        
+        <c:if test="${begin < 0 }">
+        	<c:set var="begin" value="0"/>
+        </c:if>
 
         <c:forEach begin="${begin }" end="${end }" var="num">
 	        <li class="${num eq page.number ? "active" : "" }"><a href="${url }pageNumber=${num }">${num + 1 }</a></li>
