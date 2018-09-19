@@ -1,3 +1,4 @@
+<%@page import="java.util.Enumeration"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -45,14 +46,20 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">挑战者办公自动化</a>
+          <a class="navbar-brand" href="${ctx }/">挑战者办公自动化</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="index.html#">Dashboard</a></li>
-            <li><a href="index.html#">Settings</a></li>
-            <li><a href="index.html#">Profile</a></li>
-            <li><a href="index.html#">Help</a></li>
+            <li><a href="${ctx }/">首页</a></li>
+            <%-- 获取登录的用户名 --%>
+            <c:if test="${not empty sessionScope['SPRING_SECURITY_CONTEXT'].authentication.principal }">
+            <li>
+            	<a href="${ctx }/identity/user/profile">
+            		${sessionScope['SPRING_SECURITY_CONTEXT'].authentication.principal.name }
+            	</a>
+           	</li>
+           	</c:if>
+            <li><a href="#">退出登录</a></li>
           </ul>
           <form class="navbar-form navbar-right">
             <input type="text" class="form-control" placeholder="Search...">
