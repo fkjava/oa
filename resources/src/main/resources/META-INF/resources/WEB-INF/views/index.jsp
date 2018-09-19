@@ -15,6 +15,10 @@
 	height: 130px;
 	overflow: auto;
 }
+.panel-heading .badge
+{
+	float: right;
+}
 </style>
 </head>
 <body>
@@ -22,6 +26,7 @@
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<span class="glyphicon glyphicon-tasks"></span>待办任务
+				<span class="badge">14</span>
 			</div>
 			<div class="panel-body">
 				<div>任务1  还剩5小时</div>
@@ -33,10 +38,11 @@
 		</div>
 	</div>
 	<div class="col-md-4">
-		<div class="panel panel-primary">
+		<div class="panel panel-success">
 			<div class="panel-heading">
 				<span class="glyphicon glyphicon-bell"></span>
 				最新公告
+				<span class="badge">5</span>
 			</div>
 			<div class="panel-body">
 				<div>习近平向2018年国际和平日纪念活动致贺信</div>
@@ -48,7 +54,7 @@
 		</div>
 	</div>
 	<div class="col-md-4">
-		<div class="panel panel-primary">
+		<div class="panel panel-info">
 			<div class="panel-heading">
 				<span class="glyphicon glyphicon-bullhorn"></span>
 				公司动态
@@ -64,7 +70,7 @@
 		</div>
 	</div>
 	<div class="col-md-4">
-		<div class="panel panel-primary">
+		<div class="panel panel-success">
 			<div class="panel-heading">
 				<span class="glyphicon glyphicon-globe"></span>
 				科技动态
@@ -80,7 +86,7 @@
 		</div>
 	</div>
 	<div class="col-md-4">
-		<div class="panel panel-primary">
+		<div class="panel panel-info">
 			<div class="panel-heading">
 				<span class="glyphicon glyphicon-eye-open"></span>
 				IT业界
