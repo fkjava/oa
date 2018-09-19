@@ -1,15 +1,20 @@
 package org.fkjava.oa.resources;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.sitemesh.config.ConfigurableSiteMeshFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class ResourcesConfig {
+public class ResourcesConfig implements WebMvcConfigurer {
+
+	@Override
+	public void addViewControllers(ViewControllerRegistry registry) {
+		registry.addViewController("/").setViewName("index");
+	}
+
 	// 相当于是<filter>元素
 	@Bean
 	public ConfigurableSiteMeshFilter siteMeshFilter() {
