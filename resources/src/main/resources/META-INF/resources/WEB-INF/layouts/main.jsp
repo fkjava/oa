@@ -27,13 +27,10 @@
 	<%-- _csrf_header、_csrf是为了解决AJAX结合Spring Security的时候，出现403错误的。 --%>
 	<meta name="_csrf_header" content="${_csrf.headerName}"/>
 	<meta name="_csrf" content="${_csrf.token}"/>
-	<style type="text/css">
-	.nav-sidebar-title
-	{
-		margin-left: -15px;
-		font-size: 18px;
-	}
-	</style>
+	<script type="text/javascript">
+	// 声明一个全局变量，保存上下文，给js代码使用
+	var contextPath = "${ctx}";
+	</script>
 	<sitemesh:write property="head"/>
   </head>
 
@@ -90,63 +87,7 @@
 	                <li><a href="${ctx }/identity/user">用户管理</a></li>
 	                <li><a href="${ctx }/system/menu">菜单配置</a></li>
 	            </ul> --%>
-	        </div>
-            <script type="text/javascript">
-            	// 通过AJAX读取菜单
-            	$.ajax({
-            		url: "${ctx}/system/menu/tree",
-            		success: function(data, status, xhr){
-            			// 返回List类型，本身就是一个集合，不需要再使用responseJSON
-            			//data = data.responseJSON;
-            			
-            			for( var i = 0; i < data.length; i ++){
-            				// 一级菜单
-            				var menu = data[i];
-            				var html = "<span class='nav-sidebar-title'>" + menu.name + "</span>\n";
-            				html += "<ul class='nav nav-sidebar'>\n";
-            				
-            				var subMenus = menu.children;
-            				for( var j = 0; j < subMenus.length; j++ )
-            				{
-            					var subMenu = subMenus[j];
-            					html += "    <li><a href='${ctx }" + subMenu.url + "'>" + subMenu.name + "</a></li>\n";
-            				}
-            				html += "</ul>\n"
-            				// 把生成的HTML追加到菜单的显示位置
-            				$(html).appendTo($(".menu-tree"));
-            			}
-            			// 获取当前的URL
-            			var url = document.location.href;
-            			//console.log(url);
-            			
-            			if( url.indexOf("?") > 0){
-            				// url有查询字符串，截取掉
-            				url = url.substring(0, url.indexOf("?"));
-            			}
-            			
-            			if( url.indexOf(";") > 0){
-            				// url里面包含了URL重写的参数
-            				// 在使用Session的时候，检测到没有cookie，会加上分号、把SessionID加入URL的后面
-            				url = url.substring(0, url.indexOf(";"));
-            			}
-            			
-            			// 获取所有的菜单URL，判断当前URL是否以菜单URL开头，如果是则加上class='active'
-            			var links = $(".menu-tree ul li a");
-            			for( var i = 0; i < links.length; i++ ){
-            				var href = $(links[i]).attr("href");
-            				// 检查url里面是否包含了href的值
-            				if(url.indexOf(href) > 0){
-            					$(links[i]).parent().addClass("active");
-            					break;
-            				}
-            			}
-            		},
-            		error: function(data, status, xhr){
-            			
-            		}
-            	});
-            </script>
-	
+	        </div>	
 	        <!-- 业务展示主体 -->
 	        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 	            <sitemesh:write property="body"/>
@@ -161,17 +102,7 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="${ctx }/static/js/ie10-viewport-bug-workaround.js"></script>
     
-    <script type="text/javascript">
-    $(function () {
-        var token = $("meta[name='_csrf']").attr("content");
-        var header = $("meta[name='_csrf_header']").attr("content");
-        // ajaxSend是在发送AJAX之前要调用的代码
-        $(document).ajaxSend(function(e, xhr, options) {
-        	if( token && header){
-    	    	xhr.setRequestHeader(header, token);
-        	}
-        });
-    });
+    <script type="text/javascript" src="${ctx }/static/js/main.js">
     </script>
   </body>
 </html>
