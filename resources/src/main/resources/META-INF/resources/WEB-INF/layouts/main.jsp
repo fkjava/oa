@@ -102,7 +102,7 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="${ctx }/static/js/ie10-viewport-bug-workaround.js"></script>
     
-    <script type="text/javascript" src="${ctx }/static/js/main.js">
+    <script type="text/javascript" src="${ctx }/static/js/main.js" charset="UTF-8">
     </script>
   </body>
 </html>
