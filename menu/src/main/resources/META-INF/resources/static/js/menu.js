@@ -114,7 +114,39 @@ var showDetailInForm = function(treeId, treeNode) {
 // 删除菜单，无论如何都返回false
 // 通过AJAX删除服务器的数据成功以后，再手动删除页面的菜单节点，并重置表单
 var removeMenu = function(treeId, treeNode) {
+	
+	// 1.发送AJAX请求给服务器，删除菜单节点
+	$.ajax({
+		url: "./menu/" + treeNode.id,
+		method: "delete",
+		success: function(data, status, xhr){
+			// 2.当返回成功的时候，把节点从页面中删除，并且重置表单
+			// 删除失败，则应该显示一个对话框提示一下
+			if( data.status == 2 )
+			{
+				// 删除
+				var treeObj = $.fn.zTree.getZTreeObj("menuTree");
+				treeObj.removeNode(treeNode);
+				
+				// 重置表单
+				resetForm();
+			}
+			else
+			{
+				// 提示、删除失败，不删除节点
+				alert(data.message);
+			}
+		},
+		error: function(data, status, xhr){
+			if( data.responseJSON ){
+				alert(data.responseJSON.message);
+			}else{
+				alert(data);
+			}
+		}
+	});
 
+	return false;
 };
 
 // ------------------------------------------------------------------

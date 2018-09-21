@@ -3,9 +3,9 @@ package org.fkjava.oa.identity.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.identity.domain.Role;
 import org.fkjava.oa.identity.domain.User;
-import org.fkjava.oa.identity.vo.Result;
 import org.springframework.data.domain.Page;
 
 public interface IdentityService {

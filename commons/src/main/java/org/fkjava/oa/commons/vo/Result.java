@@ -1,4 +1,4 @@
-package org.fkjava.oa.identity.vo;
+package org.fkjava.oa.commons.vo;
 
 import java.io.Serializable;
 

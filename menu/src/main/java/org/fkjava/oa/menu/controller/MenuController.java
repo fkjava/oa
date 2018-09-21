@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.identity.domain.Role;
 import org.fkjava.oa.identity.service.IdentityService;
 import org.fkjava.oa.menu.domain.Menu;
@@ -11,7 +12,9 @@ import org.fkjava.oa.menu.service.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -77,14 +80,21 @@ public class MenuController {
 			@SessionAttribute(value = "my_menus", required = false) List<Menu> sessionMenus, //
 			Model model) {
 		// 在Session里面如果没有菜单，那么就调用业务逻辑层查询
-		//if (sessionMenus == null) {
-			log.debug("Session里面没有菜单，到业务逻辑层查询");
-			List<Menu> menus = this.menuService.findCurrentUserMenuTree();
-			model.addAttribute("my_menus", menus);
-			return menus;
-		//} else {
-		//	log.debug("Session里面有菜单，直接返回");
-		//	return sessionMenus;
-		//}
+		// if (sessionMenus == null) {
+		log.debug("Session里面没有菜单，到业务逻辑层查询");
+		List<Menu> menus = this.menuService.findCurrentUserMenuTree();
+		model.addAttribute("my_menus", menus);
+		return menus;
+		// } else {
+		// log.debug("Session里面有菜单，直接返回");
+		// return sessionMenus;
+		// }
+	}
+
+	@DeleteMapping("{id}")
+	@ResponseBody
+	public Result delete(@PathVariable("id") String id) {
+		Result result = this.menuService.delete(id);
+		return result;
 	}
 }

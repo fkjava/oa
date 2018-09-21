@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.menu.dao.MenuRepository;
 import org.fkjava.oa.menu.domain.Menu;
 import org.fkjava.oa.menu.service.MenuService;
@@ -142,6 +143,28 @@ public class MenuServiceImpl implements MenuService {
 		});
 		result = Collections.unmodifiableList(result);
 
+		return result;
+	}
+
+	@Override
+	public Result delete(String id) {
+		Result result = new Result();
+		// 1.根据id把菜单查询出来
+		Menu menu = this.menuRepository.findById(id).orElse(null);
+		if (menu != null) {
+			// 2.判断菜单是否有关联的Role，如果有，不能删除
+			if (menu.getRoles().isEmpty()) {
+				this.menuRepository.delete(menu);
+				result.setMessage("删除成功");
+				result.setStatus(Result.STATUS_OK);
+			} else {
+				result.setMessage("删除失败，有关联的角色");
+				result.setStatus(Result.STATUS_ERROR);
+			}
+		} else {
+			result.setMessage("删除成功");
+			result.setStatus(Result.STATUS_OK);
+		}
 		return result;
 	}
 }

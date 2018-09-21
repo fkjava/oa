@@ -4,10 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.fkjava.oa.commons.DatePropertyEditor;
+import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.identity.domain.Role;
 import org.fkjava.oa.identity.domain.User;
 import org.fkjava.oa.identity.service.IdentityService;
-import org.fkjava.oa.identity.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
