@@ -3,6 +3,7 @@ package org.fkjava.oa.menu.domain;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -39,7 +40,7 @@ public class Menu extends UUIDEntity {
 	@OrderBy("name") // 查询集合的时候，加上order by关键字
 	private List<Menu> child;
 	// 角色和菜单的关系是多对多
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	// joinColumns : 通过Menu找Role的时候使用
 	// inverseJoinColumns : 在双向关联的时候，通过Role找Menu
 	@JoinTable(name = "sys_menu_roles", //

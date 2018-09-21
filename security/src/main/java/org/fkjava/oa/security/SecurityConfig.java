@@ -1,11 +1,16 @@
 package org.fkjava.oa.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -15,6 +20,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 //@EnableTransactionManagement
 //@EnableWebMvc //在Spring Boot项目里面，不要激活此选项，会自动配置的。
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
+
+	@Autowired
+	private FilterInvocationSecurityMetadataSource securityMetadataSource;
+	@Autowired
+	private AccessDecisionManager accessDecisionManager;
 
 	// 增加自定义的视图控制器，当一些页面只是简单的页面、不需要控制器类的时候，就可以通过这种方式配置路径
 	@Override
@@ -27,6 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
 	// 配置Spring Security
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+//		System.out.println("security模块的安全配置");
 		// super.configure(http);
 		http.formLogin()// 表单登录的配置
 				.loginPage("/security/login")// 登录页面的URL
@@ -40,6 +51,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
 				.and().authorizeRequests()// 配置鉴权（看用户是否有权限访问目标）
 				.antMatchers("/security/login", "/webjars/**", "/static/**").permitAll()// 所有人无须登录可以访问的页面
 				.anyRequest().hasAnyRole("USER")// 其他所有链接，都必须登录后具有USER身份可以访问
+				.withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
+					@Override
+					public <O extends FilterSecurityInterceptor> O postProcess(O object) {
+//						System.out.println("执行postProcess方法：" + object);
+
+						// 使用自定义的元数据
+						object.setSecurityMetadataSource(securityMetadataSource);
+
+						// 使用自定义的安全决策器
+						object.setAccessDecisionManager(accessDecisionManager);
+
+						return object;
+					}
+				})//
 		;
 	}
 
