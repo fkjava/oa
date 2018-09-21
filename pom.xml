@@ -40,5 +40,7 @@
 		<module>resources</module>
 		<module>security</module>
 		<module>menu</module>
+		<module>hrm</module>
+		<module>note</module>
 	</modules>
 </project>
