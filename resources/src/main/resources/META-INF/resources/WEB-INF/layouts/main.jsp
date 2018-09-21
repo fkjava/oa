@@ -115,6 +115,31 @@
             				// 把生成的HTML追加到菜单的显示位置
             				$(html).appendTo($(".menu-tree"));
             			}
+            			// 获取当前的URL
+            			var url = document.location.href;
+            			//console.log(url);
+            			
+            			if( url.indexOf("?") > 0){
+            				// url有查询字符串，截取掉
+            				url = url.substring(0, url.indexOf("?"));
+            			}
+            			
+            			if( url.indexOf(";") > 0){
+            				// url里面包含了URL重写的参数
+            				// 在使用Session的时候，检测到没有cookie，会加上分号、把SessionID加入URL的后面
+            				url = url.substring(0, url.indexOf(";"));
+            			}
+            			
+            			// 获取所有的菜单URL，判断当前URL是否以菜单URL开头，如果是则加上class='active'
+            			var links = $(".menu-tree ul li a");
+            			for( var i = 0; i < links.length; i++ ){
+            				var href = $(links[i]).attr("href");
+            				// 检查url里面是否包含了href的值
+            				if(url.indexOf(href) > 0){
+            					$(links[i]).parent().addClass("active");
+            					break;
+            				}
+            			}
             		},
             		error: function(data, status, xhr){
             			
