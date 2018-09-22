@@ -69,8 +69,8 @@
           <form action="${ctx }/security/do-logout" id="logoutForm" style="display: none;" method="post">
           		<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
           </form>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Search...">
+          <form class="navbar-form navbar-right" method="get" action="">
+            <input type="text" class="form-control" placeholder="Search..." name="keyword" value="${param.keyword }"/>
           </form>
         </div>
       </div>

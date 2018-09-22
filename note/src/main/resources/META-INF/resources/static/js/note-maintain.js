@@ -35,15 +35,17 @@ $(function(){
 });
 // 初始化富文本编辑器
 var E = window.wangEditor;
-// document.querySelector("#noteContent")
-var editor = new E('#noteContent');
-// 或者 var editor = new E( document.getElementById('editor') )
-
-// 自定义内容改变事件的处理
-editor.customConfig.onchange = function (html) {
-	console.log(html);
-    // 监控变化，同步更新到 textarea
-    $("#noteForm #content").val(html);
-};
-
-editor.create();
+if( E ){
+	// document.querySelector("#noteContent")
+	var editor = new E('#noteContent');
+	// 或者 var editor = new E( document.getElementById('editor') )
+	
+	// 自定义内容改变事件的处理
+	editor.customConfig.onchange = function (html) {
+		//console.log(html);
+	    // 监控变化，同步更新到 textarea
+	    $("#noteForm #content").val(html);
+	};
+	
+	editor.create();
+}

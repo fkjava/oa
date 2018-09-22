@@ -21,6 +21,7 @@ body {
  */
 .navbar-fixed-top {
 	border: 0;
+	z-index: 10005;
 }
 
 /*
@@ -109,4 +110,15 @@ body {
 .placeholder img {
 	display: inline-block;
 	border-radius: 50%;
+}
+
+.pagination
+{
+	margin-bottom: 0px;
+	margin-top: 0px;
+}
+
+.panel-heading
+{
+	padding: 5px 5px;
 }

@@ -13,6 +13,9 @@ import org.fkjava.oa.note.domain.NoteType;
 import org.fkjava.oa.note.service.NoteService;
 import org.fkjava.oa.security.vo.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -81,5 +84,26 @@ public class NoteServiceImpl implements NoteService {
 		this.noteDao.save(note);
 
 		return Result.of(Result.STATUS_OK);
+	}
+
+	@Override
+	public Page<Note> findNotes(String keyword, Integer pageNumber) {
+		Pageable pageable = PageRequest.of(pageNumber, 8);
+		if (StringUtils.isEmpty(keyword)) {
+			keyword = null;
+		} else {
+			// 如果使用Like关键字，需要在这里自己加%，使用Containing不需要自己加
+		}
+
+		Page<Note> page;
+		if (keyword != null) {
+			// 根据关键字查询，这里暂时只是利用title查询
+			// 以后这里会改成使用【搜索引擎】来查询，这需要学习搜索引擎！
+			page = this.noteDao.findByTitleContainingOrderByStatusAscTitleAsc(keyword, pageable);
+		} else {
+			// 没有关键字，查询所有数据
+			page = this.noteDao.findAll(pageable);
+		}
+		return page;
 	}
 }
