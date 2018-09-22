@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer.ExpressionInterceptUrlRegistry;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -21,7 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 //@EnableWebMvc //在Spring Boot项目里面，不要激活此选项，会自动配置的。
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
-	@Autowired
+	@Autowired(required = false)
 	private FilterInvocationSecurityMetadataSource securityMetadataSource;
 	@Autowired
 	private AccessDecisionManager accessDecisionManager;
@@ -39,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
 	protected void configure(HttpSecurity http) throws Exception {
 //		System.out.println("security模块的安全配置");
 		// super.configure(http);
-		http.formLogin()// 表单登录的配置
+		ExpressionInterceptUrlRegistry reg = http.formLogin()// 表单登录的配置
 				.loginPage("/security/login")// 登录页面的URL
 				.loginProcessingUrl("/security/do-login")// 处理登录的URL
 				.usernameParameter("loginName")// 登录名的字段名
@@ -49,23 +50,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
 				.logoutSuccessUrl("/")// 退出登录之后的URL
 				.and().csrf()// 防止跨站攻击，请求参数中需要携带一个特殊的隐藏属性
 				.and().authorizeRequests()// 配置鉴权（看用户是否有权限访问目标）
-				.antMatchers("/security/login", "/webjars/**", "/static/**").permitAll()// 所有人无须登录可以访问的页面
+//				.antMatchers("/security/login", "/webjars/**", "/static/**").permitAll()// 所有人无须登录可以访问的页面
 				.anyRequest().hasAnyRole("USER")// 其他所有链接，都必须登录后具有USER身份可以访问
-				.withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
-					@Override
-					public <O extends FilterSecurityInterceptor> O postProcess(O object) {
-//						System.out.println("执行postProcess方法：" + object);
-
-						// 使用自定义的元数据
-						object.setSecurityMetadataSource(securityMetadataSource);
-
-						// 使用自定义的安全决策器
-						object.setAccessDecisionManager(accessDecisionManager);
-
-						return object;
-					}
-				})//
 		;
+		if (this.securityMetadataSource != null) {
+			reg.withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
+				@Override
+				public <O extends FilterSecurityInterceptor> O postProcess(O object) {
+//					System.out.println("执行postProcess方法：" + object);
+
+					// 使用自定义的元数据
+					object.setSecurityMetadataSource(securityMetadataSource);
+
+					// 使用自定义的安全决策器
+					object.setAccessDecisionManager(accessDecisionManager);
+
+					return object;
+				}
+			})//
+			;
+		}
 	}
 
 	public static void main(String[] args) {

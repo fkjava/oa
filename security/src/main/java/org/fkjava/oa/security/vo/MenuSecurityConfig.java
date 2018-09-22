@@ -47,4 +47,43 @@ public class MenuSecurityConfig extends SecurityConfig {
 		return "MenuSecurityConfig [getUrl()=" + getUrl() + ", getMethod()=" + getMethod() + ", getAttribute()="
 				+ getAttribute() + "]";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result + ((super.getAttribute() == null) ? 0 : super.getAttribute().hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MenuSecurityConfig other = (MenuSecurityConfig) obj;
+		if (method == null) {
+			if (other.method != null)
+				return false;
+		} else if (!method.equals(other.method))
+			return false;
+
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
+			return false;
+
+		if (super.getAttribute() == null) {
+			if (other.getAttribute() != null)
+				return false;
+		} else if (!super.getAttribute().equals(other.getAttribute()))
+			return false;
+		return true;
+	}
 }

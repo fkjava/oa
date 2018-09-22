@@ -11,12 +11,16 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
+import org.springframework.security.web.FilterInvocation;
 import org.springframework.stereotype.Service;
+import org.springframework.util.AntPathMatcher;
 
 @Service
 public class MyAccessDecisionManager implements AccessDecisionManager {
 
 	protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
+	private String[] excludePath = new String[] { "/security/login", "/webjars/**", "/static/**" };
 
 	// authentication就是当前登录用户的信息
 	// object是访问目标
@@ -25,6 +29,17 @@ public class MyAccessDecisionManager implements AccessDecisionManager {
 	@Override
 	public void decide(Authentication authentication, Object object, Collection<ConfigAttribute> configAttributes)
 			throws AccessDeniedException, InsufficientAuthenticationException {
+
+		FilterInvocation invocation = (FilterInvocation) object;
+		// URL+method是一个唯一键
+		String url = invocation.getRequestUrl();
+		AntPathMatcher matcher = new AntPathMatcher();
+
+		for (String path : excludePath) {
+			if (matcher.match(path, url)) {
+				return;
+			}
+		}
 
 		// 循环所有的用户角色，判断是否在configAttributes里面，如果在表示可以访问，否则抛出异常。
 		// authorities是用户有用的权限

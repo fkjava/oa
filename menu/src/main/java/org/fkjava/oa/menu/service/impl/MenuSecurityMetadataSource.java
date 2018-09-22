@@ -71,6 +71,12 @@ public class MenuSecurityMetadataSource implements FilterInvocationSecurityMetad
 			return config.getMethod().equals(method) && matcher.match(config.getUrl(), url);
 		}).forEach(result::add);
 
+		// 加入默认的角色配置
+		MenuSecurityConfig defaultConfig = new MenuSecurityConfig(url, method, "ROLE_USER");
+		if (!result.contains(defaultConfig)) {
+			result.add(defaultConfig);
+		}
+
 //		System.out.println(result);
 
 		// 返回null或者空集合，表示访问此URL不需要任何权限
