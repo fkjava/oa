@@ -23,6 +23,21 @@ public class Result implements Serializable {
 	 */
 	private String message;
 
+	public static Result of(int status, String message) {
+		Result result = new Result();
+		result.setStatus(status);
+		result.setMessage(message);
+
+		return result;
+	}
+
+	public static Result of(int status) {
+		Result result = new Result();
+		result.setStatus(status);
+
+		return result;
+	}
+
 	public int getStatus() {
 		return status;
 	}

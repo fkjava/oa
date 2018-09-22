@@ -14,6 +14,8 @@ public class UserDetails extends User {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// 为了让业务逻辑层能够得到用户的id
+	private String id;
 	// 为了能够显示姓名
 	private String name;
 	private List<Role> roles;
@@ -21,6 +23,7 @@ public class UserDetails extends User {
 	public UserDetails(org.fkjava.oa.identity.domain.User user, Collection<GrantedAuthority> authorities) {
 		super(user.getLoginName(), user.getPassword(), authorities);
 		// 扩展属性
+		this.id = user.getId();
 		this.name = user.getName();
 		this.roles = user.getRoles();
 	}
@@ -39,5 +42,13 @@ public class UserDetails extends User {
 
 	public void setRoles(List<Role> roles) {
 		this.roles = roles;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

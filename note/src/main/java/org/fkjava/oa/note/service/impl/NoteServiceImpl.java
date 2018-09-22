@@ -1,13 +1,20 @@
 package org.fkjava.oa.note.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.fkjava.oa.commons.vo.Result;
+import org.fkjava.oa.identity.domain.User;
+import org.fkjava.oa.note.dao.NoteDao;
 import org.fkjava.oa.note.dao.NoteTypeDao;
+import org.fkjava.oa.note.domain.Note;
+import org.fkjava.oa.note.domain.Note.NoteStatus;
 import org.fkjava.oa.note.domain.NoteType;
 import org.fkjava.oa.note.service.NoteService;
+import org.fkjava.oa.security.vo.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -16,6 +23,8 @@ public class NoteServiceImpl implements NoteService {
 
 	@Autowired
 	private NoteTypeDao noteTypeDao;
+	@Autowired
+	private NoteDao noteDao;
 
 	@Override
 	public void save(NoteType type) {
@@ -51,5 +60,26 @@ public class NoteServiceImpl implements NoteService {
 		result.setMessage("删除成功");
 		result.setStatus(Result.STATUS_OK);
 		return result;
+	}
+
+	@Override
+	public Result save(Note note) {
+		// 获取当前的登录信息
+		UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = new User();
+		user.setId(ud.getId());
+
+		if (StringUtils.isEmpty(note.getId())) {
+			note.setId(null);
+		}
+
+		note.setPublishTime(null);
+		note.setWriteTime(new Date());
+		note.setWriteUser(user);
+		note.setStatus(NoteStatus.DRAFT);
+
+		this.noteDao.save(note);
+
+		return Result.of(Result.STATUS_OK);
 	}
 }
