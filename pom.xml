@@ -42,5 +42,6 @@
 		<module>menu</module>
 		<module>hrm</module>
 		<module>note</module>
+		<module>storage</module>
 	</modules>
 </project>
