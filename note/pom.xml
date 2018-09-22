@@ -16,6 +16,11 @@
 			<artifactId>menu</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>storage</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- 加入Servlet API的依赖 -->
 		<dependency>

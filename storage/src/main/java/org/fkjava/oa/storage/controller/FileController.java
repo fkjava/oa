@@ -7,6 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.fkjava.oa.storage.domain.FileInfo;
 import org.fkjava.oa.storage.service.FileService;
@@ -27,9 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-// /storage/shared/file
+// /storage/file
 @Controller
-@RequestMapping("/shared/file")
+@RequestMapping("/storage/file")
 public class FileController {
 
 	@Autowired
@@ -45,7 +47,7 @@ public class FileController {
 		// /项目名称/模块名称/功能名称/操作名称
 		// /storage/shared/file/index
 		// /WEB-INF/views/shared/file/index.jsp
-		ModelAndView mav = new ModelAndView("file/index");
+		ModelAndView mav = new ModelAndView("storage/file/index");
 
 		Page<FileInfo> page = this.fileService.find(name, orderByProperty, pageNumber);
 		mav.addObject("page", page);
@@ -55,7 +57,7 @@ public class FileController {
 
 	@PostMapping
 	public ModelAndView upload(@RequestParam("file") MultipartFile file) throws IOException {
-		ModelAndView mav = new ModelAndView("redirect:/shared/file");
+		ModelAndView mav = new ModelAndView("redirect:/storage/file");
 
 		String name = file.getOriginalFilename();
 		String contentType = file.getContentType();
@@ -140,5 +142,47 @@ public class FileController {
 	public String delete(@PathVariable("id") String id) {
 		this.fileService.delete(id);
 		return "ok";
+	}
+
+	// ============================================
+	@PostMapping("wangEditor")
+	@ResponseBody
+	public WangEditorResult wangEditor(@RequestParam("file") MultipartFile file) {
+		String name = file.getOriginalFilename();
+		String contentType = file.getContentType();
+		long contentLength = file.getSize();
+
+		WangEditorResult result = new WangEditorResult();
+		try (InputStream content = file.getInputStream();) {
+			// 调用业务逻辑层的代码
+			String id = this.fileService.save(name, contentType, contentLength, content);
+			result.setErrno(0);
+			// 拼接下载的路径给wangEditor
+			result.getData().add("/storage/file/" + id);
+		} catch (IOException ex) {
+			result.setErrno(1);
+		}
+		return result;
+	}
+
+	public static class WangEditorResult {
+		private int errno;
+		private List<String> data = new LinkedList<>();
+
+		public int getErrno() {
+			return errno;
+		}
+
+		public void setErrno(int errno) {
+			this.errno = errno;
+		}
+
+		public List<String> getData() {
+			return data;
+		}
+
+		public void setData(List<String> data) {
+			this.data = data;
+		}
 	}
 }

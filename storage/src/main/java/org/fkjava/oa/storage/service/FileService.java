@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 
 public interface FileService {
 
-	void save(String name, String contentType, long contentLength, InputStream content);
+	String save(String name, String contentType, long contentLength, InputStream content);
 
 	Page<FileInfo> find(String name, String orderByProperty, Integer pageNumber);
 

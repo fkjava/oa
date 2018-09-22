@@ -28,13 +28,14 @@ public class FileServiceImpl implements FileService {
 	private FileInfoDao fileInfoDao;
 
 	@Override
-	public void save(String name, String contentType, long contentLength, InputStream content) {
+	public String save(String name, String contentType, long contentLength, InputStream content) {
 		// 保存文件到硬盘的某个目录，返回一个保存的文件路径回来
 		// 路径是相对于某个目录的！
 		String filePath = fileDao.save(name, contentType, contentLength, content);
 		// 保存文件信息到数据库
 		FileInfo fileInfo = new FileInfo(name, contentType, contentLength, filePath);
-		fileInfoDao.save(fileInfo);
+		fileInfo = fileInfoDao.save(fileInfo);
+		return fileInfo.getId();
 	}
 
 	@Override
