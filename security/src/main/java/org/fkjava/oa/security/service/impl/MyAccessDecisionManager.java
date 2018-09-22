@@ -20,7 +20,7 @@ public class MyAccessDecisionManager implements AccessDecisionManager {
 
 	protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
-	private String[] excludePath = new String[] { "/security/login", "/webjars/**", "/static/**" };
+	private String[] excludePath = new String[] { "/error", "/security/login", "/webjars/**", "/static/**" };
 
 	// authentication就是当前登录用户的信息
 	// object是访问目标
