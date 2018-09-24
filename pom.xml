@@ -43,5 +43,6 @@
 		<module>hrm</module>
 		<module>note</module>
 		<module>storage</module>
-	</modules>
+        <module>exam</module>
+    </modules>
 </project>
