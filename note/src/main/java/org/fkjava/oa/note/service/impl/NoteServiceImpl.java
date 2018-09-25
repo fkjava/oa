@@ -12,22 +12,41 @@ import org.fkjava.oa.note.domain.Note.NoteStatus;
 import org.fkjava.oa.note.domain.NoteType;
 import org.fkjava.oa.note.service.NoteService;
 import org.fkjava.oa.security.vo.UserDetails;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
-public class NoteServiceImpl implements NoteService {
+public class NoteServiceImpl implements NoteService, InitializingBean {
 
 	@Autowired
 	private NoteTypeDao noteTypeDao;
 	@Autowired
 	private NoteDao noteDao;
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		NoteType type = new NoteType();
+		type.setDeletable(false);
+		type.setModifiable(false);
+		type.setRevocable(false);
+		type.setName("撤回公告");
+		type.setNumber(9999999);
+
+		NoteType old = this.noteTypeDao.findByName(type.getName());
+		if (old != null) {
+			type.setId(old.getId());
+		}
+
+		this.save(type);
+	}
 
 	@Override
 	public void save(NoteType type) {
@@ -88,7 +107,8 @@ public class NoteServiceImpl implements NoteService {
 
 	@Override
 	public Page<Note> findNotes(String keyword, Integer pageNumber) {
-		Pageable pageable = PageRequest.of(pageNumber, 8);
+		Sort sort = Sort.by(Order.asc("status"), Order.desc("title"));
+		Pageable pageable = PageRequest.of(pageNumber, 8, sort);
 		if (StringUtils.isEmpty(keyword)) {
 			keyword = null;
 		} else {
@@ -99,11 +119,60 @@ public class NoteServiceImpl implements NoteService {
 		if (keyword != null) {
 			// 根据关键字查询，这里暂时只是利用title查询
 			// 以后这里会改成使用【搜索引擎】来查询，这需要学习搜索引擎！
-			page = this.noteDao.findByTitleContainingOrderByStatusAscTitleAsc(keyword, pageable);
+//			page = this.noteDao.findByTitleContainingOrderByStatusAscTitleAsc(keyword, pageable);
+			page = this.noteDao.findByTitleContaining(keyword, pageable);
 		} else {
 			// 没有关键字，查询所有数据
+//			Sort sort = Sort.by(Order.asc("status"), Order.desc("title"));
+//			pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 			page = this.noteDao.findAll(pageable);
 		}
 		return page;
+	}
+
+	@Override
+	public void publish(String id) {
+		// getOne返回永远不为空，是延迟加载的，返回代理对象
+		// findById不延迟加载，返回Optional
+		Note note = this.noteDao.findById(id).orElse(null);
+		if (note != null) {
+			note.setStatus(NoteStatus.PUBLISHED);
+			note.setPublishTime(new Date());
+
+			this.noteDao.save(note);
+		}
+	}
+
+	@Override
+	public void revoke(String id, String revokeRemark) {
+		Note note = this.noteDao.findById(id).orElse(null);
+		if (note != null) {
+			// 标记原有的公告已经撤回
+			note.setStatus(NoteStatus.REVOKED);
+			this.noteDao.save(note);
+
+			// 发布一个撤回公告
+			// 撤回公告的类型是特殊的、固定的，需要在NoteType管理的时候，无论如何都加上一个固定的【撤回公告】。
+			// 撤回公告，不可编辑、不可删除、不可撤回。
+			// 在afterPropertiesSet方法里面去处理。
+			NoteType type = this.noteTypeDao.findByName("撤回公告");
+			Note newNote = new Note();
+			String content = "<p>由于" + revokeRemark + "原因，撤回原有【" + note.getTitle() + "】公告，原文：</p>";
+			content = content + "<s>" + note.getContent() + "</s>";
+			newNote.setContent(content);
+			newNote.setPublishTime(new Date());
+			newNote.setStatus(NoteStatus.PUBLISHED);
+			newNote.setTitle("撤回【" + note.getTitle() + "】");
+			newNote.setType(type);
+			newNote.setWriteTime(new Date());
+
+			UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			User user = new User();
+			user.setId(ud.getId());
+
+			newNote.setWriteUser(user);
+
+			this.noteDao.save(newNote);
+		}
 	}
 }

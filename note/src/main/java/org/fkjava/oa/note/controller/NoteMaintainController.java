@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,5 +59,17 @@ public class NoteMaintainController {
 		Result result = this.noteService.save(note);
 
 		return result;
+	}
+
+	@GetMapping("publish/{id}")
+	public String publish(@PathVariable("id") String id) {
+		this.noteService.publish(id);
+		return "redirect:/note/maintain";
+	}
+
+	@GetMapping("revoke")
+	public String revoke(@RequestParam("id") String id, @RequestParam("revokeRemark") String revokeRemark) {
+		this.noteService.revoke(id, revokeRemark);
+		return "redirect:/note/maintain";
 	}
 }

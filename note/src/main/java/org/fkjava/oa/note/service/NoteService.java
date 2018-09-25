@@ -19,4 +19,8 @@ public interface NoteService {
 
 	Page<Note> findNotes(String keyword, Integer pageNumber);
 
+	void publish(String id);
+
+	void revoke(String id, String revokeRemark);
+
 }

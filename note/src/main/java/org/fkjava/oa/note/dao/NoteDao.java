@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NoteDao extends JpaRepository<Note, String> {
 
+	// 带排序的
 	Page<Note> findByTitleContainingOrderByStatusAscTitleAsc(String keyword, Pageable pageable);
+
+	// 不带排序，需要Pageable对象包含Sort进来排序
+	Page<Note> findByTitleContaining(String keyword, Pageable pageable);
 
 }

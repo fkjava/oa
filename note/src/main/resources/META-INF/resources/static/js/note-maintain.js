@@ -68,4 +68,24 @@ $(function() {
 			}
 		});
 	});
+	
+	$(".publish-note").click(function(){
+		// 获取ID，然后发送请求给服务器
+		var tr = $(this).parent().parent();
+		var id = tr.attr("data-id");
+		document.location.href= contextPath + "/note/maintain/publish/" + id;
+	});
+	
+
+	$(".revoke-note").click(function(){
+		// 获取ID，然后发送请求给服务器
+		var tr = $(this).parent().parent();
+		var id = tr.attr("data-id");
+		var title = $("input[name='title']", tr).val();
+//		document.location.href= contextPath + "/note/maintain/revoke/" + id;
+		// 显示撤回公告的对话框
+		$(".revoke-dialog input[name='id']").val(id);
+		$(".revoke-dialog p#title").text(title);
+		$(".revoke-dialog").modal();
+	});
 });

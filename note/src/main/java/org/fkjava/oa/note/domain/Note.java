@@ -58,7 +58,7 @@ public class Note extends UUIDEntity {
 		/**
 		 * 已经撤回的
 		 */
-		REVOKE;
+		REVOKED;
 	}
 
 	public String getTitle() {
