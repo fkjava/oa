@@ -122,3 +122,16 @@ body {
 {
 	padding: 5px 5px;
 }
+
+.modal
+{
+	z-index: 100000;
+}
+/*
+	如果表头的列中，使用了onclick属性，那么就把光标改为指示器
+*/
+.table thead tr th[onclick]
+{
+	cursor: pointer;
+}
+

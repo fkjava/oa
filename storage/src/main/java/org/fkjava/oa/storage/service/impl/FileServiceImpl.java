@@ -39,9 +39,15 @@ public class FileServiceImpl implements FileService {
 	}
 
 	@Override
-	public Page<FileInfo> find(String name, String orderByProperty, Integer pageNumber) {
+	public Page<FileInfo> find(String name, String orderByProperty, String orderByDirection, Integer pageNumber) {
 		// 排序条件
-		Sort sort = Sort.by(Order.asc(orderByProperty));
+		Order order;
+		if (orderByDirection.equals("asc")) {
+			order = Order.asc(orderByProperty);
+		} else {
+			order = Order.desc(orderByProperty);
+		}
+		Sort sort = Sort.by(order);
 		// 分页条件
 		Pageable pageable = PageRequest.of(pageNumber, 10, sort);
 

@@ -10,54 +10,64 @@
 <title>通用存储</title>
 </head>
 <body>
-	<!-- 上传文件的表单 -->
-	<!-- 在action没有写值的情况下，其实就是上传/提交到当前URL -->
-	<!-- 现在访问index.jsp的完整URL= http://127.0.0.1:8080/storage/file -->
-	<form action="" method="post" enctype="multipart/form-data">
-		<input name="file" type="file"/>
-		<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-		<button type="submit">上传</button>
-	</form>
-	<!-- 显示文件列表 -->
-	<form action="" method="get">
-		文件名<input name="name" value="${param.name }"/><br/>
-		排序：
-		<label>文件名<input type="radio" name="orderBy" value="name" ${param.orderBy eq 'name' ? "checked='checked'" : "" }/></label>
-		<label>上传时间<input type="radio" name="orderBy" value="uploadTime" ${param.orderBy eq 'uploadTime' ? "checked='checked'" : "" }/></label><br/>
-		<button type="submit">搜索</button>
-	</form>
-	<table>
-		<thead>
-			<tr>
-				<th>文件名</th>
-				<th>文件类型</th>
-				<th>文件大小</th>
-				<th>上传时间</th>
-				<th>操作</th>
-			</tr>
-		</thead>
-		<tbody>
-			<%-- page.content == page.getContent() --%>
-			<c:forEach items="${page.content }" var="f">
-			<tr>
-				<td>${f.name }</td>
-				<td>${f.contentType }</td>
-				<td>${f.contentLength }字节</td>
-				<td>${f.uploadTime }</td>
-				<td>
-					下载
-					删除
-				</td>
-			</tr>
-			</c:forEach>
-		</tbody>
-		<tfoot>
-			<tr>
-				<td colspan="5">
-					<my:spring-page url="?name=${param.name }&orderBy=${param.orderBy }"/>
-				</td>
-			</tr>
-		</tfoot>
-	</table>
+	<button type="button" data-toggle="modal" data-target="#uploadDialog">上传</button>
+	<div class="table-responsive">
+		<table class="table table-bordered table-hover table-striped">
+			<thead>
+				<tr>
+					<th onclick="orderBy('name')">文件名</th>
+					<th>文件类型</th>
+					<th>文件大小</th>
+					<th onclick='orderBy("uploadTime")'>上传时间</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<%-- page.content == page.getContent() --%>
+				<c:forEach items="${page.content }" var="f">
+				<tr>
+					<td>${f.name }</td>
+					<td>${f.contentType }</td>
+					<td>${f.contentLength }字节</td>
+					<td>${f.uploadTime }</td>
+					<td>
+						下载
+						删除
+					</td>
+				</tr>
+				</c:forEach>
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="5" style="text-align: center;">
+						<my:spring-page url="?name=${param.name }&orderBy=${param.orderBy }"/>
+					</td>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
+	
+	<div class="modal fade" tabindex="-1" role="dialog" id="uploadDialog">
+	    <div class="modal-dialog" role="document">
+	        <form action="" method="post" enctype="multipart/form-data">
+	        	<div class="modal-content">
+		            <div class="modal-header">
+		                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		                <h4 class="modal-title">上传文件</h4>
+		            </div>
+		            <div class="modal-body">
+							<input name="file" type="file"/>
+							<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+		                <button type="submit" class="btn btn-primary">上传</button>
+		            </div>
+		        </div><!-- /.modal-content -->
+			</form>
+	    </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
 </body>
 </html>

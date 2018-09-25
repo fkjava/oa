@@ -52,27 +52,31 @@
           </button>
           <a class="navbar-brand" href="${ctx }/">挑战者办公自动化</a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="${ctx }/">首页</a></li>
-            <%-- 获取登录的用户名 --%>
-            <c:if test="${not empty sessionScope['SPRING_SECURITY_CONTEXT'].authentication.principal }">
-            <li>
-            	<a href="${ctx }/identity/user/profile">
-            		${sessionScope['SPRING_SECURITY_CONTEXT'].authentication.principal.name }
-            	</a>
-           	</li>
-           	</c:if>
-            <li><a href="#" onclick="$('#logoutForm').submit()">退出登录</a></li>
-          </ul>
-          <%-- 一定要注意：URL是在SecurityConfig里面配置logoutUrl，并且一定要有csrf的隐藏域 --%>
-          <form action="${ctx }/security/do-logout" id="logoutForm" style="display: none;" method="post">
-          		<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-          </form>
-          <form class="navbar-form navbar-right" method="get" action="">
-            <input type="text" class="form-control" placeholder="Search..." name="keyword" value="${param.keyword }"/>
-          </form>
-        </div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="${ctx }/">首页</a></li>
+				<%-- 获取登录的用户名 --%>
+				<c:if test="${not empty sessionScope['SPRING_SECURITY_CONTEXT'].authentication.principal }">
+					<li>
+						<a href="${ctx }/identity/user/profile">
+							${sessionScope['SPRING_SECURITY_CONTEXT'].authentication.principal.name }
+						</a>
+					</li>
+				</c:if>
+				<li><a href="#" onclick="$('#logoutForm').submit()">退出登录</a></li>
+			</ul>
+			<%-- 一定要注意：URL是在SecurityConfig里面配置logoutUrl，并且一定要有csrf的隐藏域 --%>
+			<form action="${ctx }/security/do-logout" id="logoutForm" style="display: none;" method="post">
+				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+			</form>
+			<form class="navbar-form navbar-right" method="get" action="" id="commonSearchForm">
+				<input type="text" class="form-control" placeholder="Search..." name="keyword" value="${param.keyword }"/>
+				<%-- 排序的属性名称 --%>
+				<input name="orderBy" type="hidden" value="${param.orderBy }"/>
+				<%-- 排序的方向 --%>
+				<input name="orderByDirection" type="hidden" value="${param.orderByDirection }"/>
+			</form>
+		</div>
       </div>
     </nav>
     <!-- 导航条结束 -->

@@ -20,7 +20,7 @@
 	    <table class="table table-striped">
 	        <thead>
 	            <tr>
-	                <th style="width: 10%">姓名</th>
+	                <th style="width: 10%" onclick="orderBy('name')">姓名</th>
 	                <th style="width: 10%">登录名</th>
 	                <th style="width: 20%">生日</th>
 	                <th style="width: 40%">角色</th>

@@ -193,9 +193,14 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 	}
 
 	@Override
-	public Page<User> findUsers(Integer pageNumber) {
-		// 以登录名升序、以姓名降序
-		Sort sort = Sort.by(Order.asc("loginName"), Order.desc("name"));
+	public Page<User> findUsers(String keyword, String orderByProperty, String orderByDirection, Integer pageNumber) {
+		Order order;
+		if (orderByDirection.equals("asc")) {
+			order = Order.asc(orderByProperty);
+		} else {
+			order = Order.desc(orderByProperty);
+		}
+		Sort sort = Sort.by(order);
 		Pageable pageable = PageRequest.of(pageNumber, 5, sort);
 		// 如果条件复杂，需要自己扩展DAO
 		Page<User> page = this.userDao.findAll(pageable);

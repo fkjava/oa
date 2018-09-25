@@ -20,7 +20,7 @@ public interface IdentityService {
 
 	Result checkLoginName(String loginName, String id);
 
-	Page<User> findUsers(Integer pageNumber);
+	Page<User> findUsers(String keyword, String orderByProperty, String orderByDirection, Integer pageNumber);
 
 	User findUserById(String id);
 

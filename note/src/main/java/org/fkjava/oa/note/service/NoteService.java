@@ -24,7 +24,7 @@ public interface NoteService {
 
 	void revoke(String id, String revokeRemark);
 
-	Page<NoteRead> findMyNotes(String keyword, Integer pageNumber);
+	Page<NoteRead> findMyNotes(String keyword, String orderByProperty, String orderByDirection, Integer pageNumber);
 
 	NoteRead findNoteReadByNoteId(String id);
 

@@ -182,12 +182,20 @@ public class NoteServiceImpl implements NoteService, InitializingBean {
 	}
 
 	@Override
-	public Page<NoteRead> findMyNotes(String keyword, Integer pageNumber) {
+	public Page<NoteRead> findMyNotes(String keyword, String orderByProperty, String orderByDirection,
+			Integer pageNumber) {
 		UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User user = new User();
 		user.setId(ud.getId());
 
-		Sort sort = Sort.by(Order.desc("nr.reader"), Order.asc("status"), Order.desc("title"));
+		Order order;
+		if (orderByDirection.equals("asc")) {
+			order = Order.asc(orderByProperty);
+		} else {
+			order = Order.desc(orderByProperty);
+		}
+
+		Sort sort = Sort.by(order);
 		Pageable pageable = PageRequest.of(pageNumber, 8, sort);
 //		Pageable pageable = PageRequest.of(pageNumber, 8);
 

@@ -30,13 +30,17 @@ public class UserController {
 
 	@GetMapping
 	public ModelAndView index(//
-			@RequestParam(name = "pageNumber", defaultValue = "0") Integer pageNumber
+			@RequestParam(name = "pageNumber", defaultValue = "0") Integer pageNumber, //
+			// 所有页面，都可以统一使用keyword来负责查询
+			@RequestParam(name = "keyword", required = false) String keyword, //
+			@RequestParam(value = "orderBy", defaultValue = "name") String orderByProperty, //
+			@RequestParam(value = "orderByDirection", defaultValue = "asc") String orderByDirection//
 	//
 	) {
 		ModelAndView mav = new ModelAndView("identity/user/index");
 
 		// 查数据
-		Page<User> page = this.identityService.findUsers(pageNumber);
+		Page<User> page = this.identityService.findUsers(keyword, orderByProperty, orderByDirection, pageNumber);
 		mav.addObject("page", page);
 
 		return mav;

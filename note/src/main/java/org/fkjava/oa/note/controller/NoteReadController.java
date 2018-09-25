@@ -23,12 +23,14 @@ public class NoteReadController {
 	public ModelAndView index(//
 			@RequestParam(name = "pageNumber", defaultValue = "0") Integer pageNumber, //
 			// 所有页面，都可以统一使用keyword来负责查询
-			@RequestParam(name = "keyword", required = false) String keyword//
+			@RequestParam(name = "keyword", required = false) String keyword, //
+			@RequestParam(value = "orderBy", defaultValue = "title") String orderByProperty, //
+			@RequestParam(value = "orderByDirection", defaultValue = "asc") String orderByDirection//
 	) {
 		ModelAndView mav = new ModelAndView("note/read/index");
 
 		// 查询当前用户可以读取的公告，并且把公告的状态也查询出来（还没有阅读的公告没有User对象）
-		Page<NoteRead> page = this.noteService.findMyNotes(keyword, pageNumber);
+		Page<NoteRead> page = this.noteService.findMyNotes(keyword, orderByProperty, orderByDirection, pageNumber);
 		mav.addObject("page", page);
 
 		return mav;

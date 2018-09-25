@@ -41,15 +41,17 @@ public class FileController {
 	@GetMapping
 	public ModelAndView index(//
 			@RequestParam(value = "pageNumber", defaultValue = "0") Integer pageNumber, //
-			@RequestParam(value = "name", required = false) String name, //
-			@RequestParam(value = "orderBy", defaultValue = "name") String orderByProperty) {
+			@RequestParam(value = "keyword", required = false) String name, //
+			@RequestParam(value = "orderBy", defaultValue = "name") String orderByProperty, //
+			@RequestParam(value = "orderByDirection", defaultValue = "asc") String orderByDirection//
+	) {
 
 		// /项目名称/模块名称/功能名称/操作名称
 		// /storage/shared/file/index
 		// /WEB-INF/views/shared/file/index.jsp
 		ModelAndView mav = new ModelAndView("storage/file/index");
 
-		Page<FileInfo> page = this.fileService.find(name, orderByProperty, pageNumber);
+		Page<FileInfo> page = this.fileService.find(name, orderByProperty, orderByDirection, pageNumber);
 		mav.addObject("page", page);
 
 		return mav;

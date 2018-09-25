@@ -23,11 +23,11 @@
 				<table class="table table-bordered table-hover table-striped">
 					<thead>
 						<tr>
-							<th style="width: 55%;">标题</th>
+							<th style="width: 55%;" onclick="orderBy('title')">标题</th>
 							<th style="width: 10%;">类型</th>
 							<th style="width: 10%;">作者</th>
-							<th style="width: 15%;">发布时间</th>
-							<th style="width: 10%;">是否已读</th>
+							<th style="width: 15%;" onclick="orderBy('publishTime')">发布时间</th>
+							<th style="width: 10%;" onclick="orderBy('nr.reader')">是否已读</th>
 						</tr>
 					</thead>
 					<tbody>

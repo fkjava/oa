@@ -10,7 +10,7 @@ public interface FileService {
 
 	String save(String name, String contentType, long contentLength, InputStream content);
 
-	Page<FileInfo> find(String name, String orderByProperty, Integer pageNumber);
+	Page<FileInfo> find(String name, String orderByProperty, String orderByDirection, Integer pageNumber);
 
 	FileInfo getFileInfoById(String id);
 
