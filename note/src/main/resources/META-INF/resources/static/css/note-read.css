@@ -1,0 +1,32 @@
+@charset "UTF-8";
+.note-title
+{
+	text-align: center;
+	font-size: 30px;
+	border-bottom: 3px solid red;
+}
+
+.note-writer
+{
+	text-align: center;
+}
+.note-writer > div, .note-writer > span
+{
+	max-width: 500px;
+	min-width: 200px;
+}
+.note-writer .note-author
+{
+	display: inline-block;
+	margin-right: 30px;
+}
+
+.note-writer .note-write-time
+{
+	display: inline-block;
+}
+
+.note-content
+{
+	text-indent: 30px;
+}

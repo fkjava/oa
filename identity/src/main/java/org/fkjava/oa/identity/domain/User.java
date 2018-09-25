@@ -39,6 +39,13 @@ public class User extends UUIDEntity {
 	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 
+	public User() {
+	}
+
+	public User(String id) {
+		super.setId(id);
+	}
+
 	/**
 	 * 用户状态
 	 * 

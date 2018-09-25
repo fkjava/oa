@@ -45,6 +45,13 @@ public class Note extends UUIDEntity {
 	@Column(length = 1024 * 1024)
 	private String content;
 
+	public Note() {
+	}
+
+	public Note(String id) {
+		super.setId(id);
+	}
+
 	// 内部枚举
 	public static enum NoteStatus {
 		/**

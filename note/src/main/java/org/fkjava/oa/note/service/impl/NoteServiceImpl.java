@@ -2,13 +2,16 @@ package org.fkjava.oa.note.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.identity.domain.User;
 import org.fkjava.oa.note.dao.NoteDao;
+import org.fkjava.oa.note.dao.NoteReadDao;
 import org.fkjava.oa.note.dao.NoteTypeDao;
 import org.fkjava.oa.note.domain.Note;
 import org.fkjava.oa.note.domain.Note.NoteStatus;
+import org.fkjava.oa.note.domain.NoteRead;
 import org.fkjava.oa.note.domain.NoteType;
 import org.fkjava.oa.note.service.NoteService;
 import org.fkjava.oa.security.vo.UserDetails;
@@ -30,6 +33,8 @@ public class NoteServiceImpl implements NoteService, InitializingBean {
 	private NoteTypeDao noteTypeDao;
 	@Autowired
 	private NoteDao noteDao;
+	@Autowired
+	private NoteReadDao noteReadDao;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -173,6 +178,77 @@ public class NoteServiceImpl implements NoteService, InitializingBean {
 			newNote.setWriteUser(user);
 
 			this.noteDao.save(newNote);
+		}
+	}
+
+	@Override
+	public Page<NoteRead> findMyNotes(String keyword, Integer pageNumber) {
+		UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = new User();
+		user.setId(ud.getId());
+
+		Sort sort = Sort.by(Order.desc("nr.reader"), Order.asc("status"), Order.desc("title"));
+		Pageable pageable = PageRequest.of(pageNumber, 8, sort);
+//		Pageable pageable = PageRequest.of(pageNumber, 8);
+
+		// 使用外链接把公告和公告的阅读记录查询出来
+//		select nr.*, n.*, u.*
+//			from note n
+//		    left outer join note_read nr on n.id = nr.note_id
+//		    and nr.reader_id='ddddd'
+		Page<NoteRead> page = this.noteReadDao.findByReader(user, pageable);
+
+		return page;
+	}
+
+	@Override
+	public NoteRead findNoteReadByNoteId(String id) {
+		Note note = this.noteDao.findById(id).orElse(null);
+		if (note != null) {
+
+			UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			User user = new User();
+			user.setId(ud.getId());
+			// 查询阅读记录
+			Optional<NoteRead> optional = this.noteReadDao.findByNoteAndReader(note, user);
+
+			// 写代码的时候，以写if、else为耻，用多态为荣
+			NoteRead read = optional.orElseGet(() -> {
+				NoteRead r = new NoteRead();
+				r.setNote(note);
+				return r;
+			});
+
+//			if( read == null ) {
+//				read = new NoteRead();
+//				read.setNote(note);
+//			}
+			return read;
+		}
+
+		return null;
+	}
+
+	@Override
+	public void read(String id) {
+		Note note = this.noteDao.findById(id).orElse(null);
+		if (note != null) {
+			// 原理已经读过，那么现在不需要再读取！
+			UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			User user = new User();
+			user.setId(ud.getId());
+
+			NoteRead old = this.noteReadDao.findByNoteAndReader(note, user).orElse(null);
+			if (old == null) {
+
+				// 新增阅读记录
+				NoteRead read = new NoteRead();
+				read.setNote(note);
+				read.setReader(user);
+				read.setReadTime(new Date());
+
+				this.noteReadDao.save(read);
+			}
 		}
 	}
 }
