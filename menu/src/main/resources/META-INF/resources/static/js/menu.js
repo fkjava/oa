@@ -131,11 +131,8 @@ var removeMenu = function(treeId, treeNode) {
 				// 重置表单
 				resetForm();
 			}
-			else
-			{
-				// 提示、删除失败，不删除节点
-				alert(data.message);
-			}
+			// 提示、删除失败，不删除节点
+			alert(data.message);
 		},
 		error: function(data, status, xhr){
 			if( data.responseJSON ){

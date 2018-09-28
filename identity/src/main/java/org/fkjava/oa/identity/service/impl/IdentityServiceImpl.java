@@ -239,4 +239,11 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 		UserStatus status = UserStatus.SEPARATION;
 		return this.userDao.findByLoginNameAndStatusNot(loginName, status);
 	}
+
+	// 查询所有的在职用户
+	@Override
+	public List<User> findAllNormalUsers() {
+		UserStatus status = UserStatus.NORMAL;
+		return this.userDao.findByStatus(status);
+	}
 }

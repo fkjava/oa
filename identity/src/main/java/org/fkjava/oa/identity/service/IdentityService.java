@@ -28,4 +28,6 @@ public interface IdentityService {
 
 	Optional<User> findUserByLoginName(String loginName);
 
+	List<User> findAllNormalUsers();
+
 }
