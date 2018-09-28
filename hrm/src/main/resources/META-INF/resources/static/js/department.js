@@ -108,7 +108,7 @@ $(function() {
 		}
 		return false;
 	};
-	
+
 	// 在表单里面显示部门的详细信息
 	var showDetailInForm = function(treeId, treeNode) {
 		$("#departmentForm #id").val(treeNode.id);
@@ -122,7 +122,8 @@ $(function() {
 		var parentNode = treeNode.getParentNode();
 		if (parentNode) {
 			$("#departmentForm #parentId").val(treeNode.getParentNode().id);
-			$("#departmentForm #parentName").text(treeNode.getParentNode().name);
+			$("#departmentForm #parentName")
+					.text(treeNode.getParentNode().name);
 		} else {
 			$("#departmentForm #parentId").val("");
 			$("#departmentForm #parentName").text("");
@@ -149,7 +150,52 @@ $(function() {
 	};
 	// 不能直接在onclick属性里面指定函数，只能通过jQuery来绑定事件
 	$(".btn-reset").click(resetForm);
-	
+
+	/**
+	 * @param event
+	 *            是js事件
+	 * @param treeId
+	 *            是显示树的HTML元素的id
+	 * @param treeNodes
+	 *            是拖动的节点
+	 * @param targetNode
+	 *            是目标节点，如果为空表示拖动外面成为根节点
+	 * @param moveType
+	 *            有三种情况：inner表示treeNodes成为targetNode的子节点；prev表示treeNodes放到targetNode的前面；next为后面
+	 * @param isCopy
+	 *            是否为复制，按住Ctrl键就是复制
+	 */
+	var moveDepartment = function(event, treeId, treeNodes, targetNode,
+			moveType, isCopy) {
+		// 因为是单选的树，所以treeNodes只有一个节点
+		var treeNode = treeNodes[0];
+		var targetNodeId;
+		if (targetNode) {
+			targetNodeId = targetNode.id;
+		} else {
+			targetNodeId = "";
+		}
+		// 发送AJAX到服务器，把新的顺序更新到数据库
+		var url = "./department/move/" + moveType + "/" + treeNode.id + "/"
+				+ targetNodeId;
+		$.ajax({
+			url : url,
+			method : "post",
+			success : function(data, status, xhr) {
+				if (data.status != 2) {
+					alert(data.message);
+				}
+			},
+			error : function(data, status, xhr) {
+				if (data.responseJSON) {
+					alert(data.responseJSON.message);
+				} else {
+					alert("移动部门出现未知错误");
+				}
+			}
+		});
+	};
+
 	// 对树型结构的设置
 	var setting = {
 		view : {
@@ -167,7 +213,11 @@ $(function() {
 			editNameSelectAll : true,
 			// 显示删除按钮，可以是boolean，也可以是函数
 			showRemoveBtn : showRemoveButton,
-			showRenameBtn : false
+			showRenameBtn : false,
+			drag : {
+				// 禁止拷贝
+				isCopy : false
+			}
 		},
 		data : {
 			simpleData : {
@@ -179,7 +229,8 @@ $(function() {
 		// 所有回调都是函数，如果不需要则设置为false
 		callback : {
 			beforeRemove : removeDepartment,
-			onSelected : showDetailInForm
+			onSelected : showDetailInForm,
+			onDrop : moveDepartment
 		}
 	};
 
@@ -191,4 +242,3 @@ $(function() {
 var beforeSubmit = function() {
 
 };
-

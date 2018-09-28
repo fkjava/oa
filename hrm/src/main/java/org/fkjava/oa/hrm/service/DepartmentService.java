@@ -13,4 +13,13 @@ public interface DepartmentService {
 
 	Result deleteById(String id);
 
+	/**
+	 * 
+	 * @param moveType           前面、里面、后面
+	 * @param departmentId       移动的节点
+	 * @param targetDepartmentId 目标节点
+	 * @return
+	 */
+	Result move(String moveType, String departmentId, String targetDepartmentId);
+
 }

@@ -9,6 +9,9 @@ import org.fkjava.oa.hrm.service.DepartmentService;
 import org.fkjava.oa.identity.dao.UserDao;
 import org.fkjava.oa.identity.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -94,6 +97,102 @@ public class DepartmentServiceImpl implements DepartmentService {
 		} catch (Exception ex) {
 			result = Result.of(Result.STATUS_ERROR, "删除失败");
 		}
+		return result;
+	}
+
+	@Override
+	public Result move(String moveType, String departmentId, String targetDepartmentId) {
+
+		// 查询要移动的部门
+		Department department = this.departmentRepository.findById(departmentId).orElse(null);
+		Department target = null;
+		if (StringUtils.isEmpty(targetDepartmentId)) {
+			// 没有目标，将会作为新的根节点放到最后面
+			targetDepartmentId = null;
+		} else {
+			// 把目标部门也查询出来
+			target = this.departmentRepository.findById(targetDepartmentId).orElse(null);
+		}
+		if (target == null) {
+			// 移动部门为一级部门
+			department.setParent(null);
+			Double number = this.departmentRepository.findMaxNumber();
+			if (number == null) {
+				number = 0.0;
+			} else {
+				number = number + 10000;
+			}
+			department.setNumber(number);
+		} else {
+			// 字符串常量放到前面比较安全，不容易出现空指针
+			if ("inner".equals(moveType)) {
+				// 作为子部门
+				Double maxNumber = this.departmentRepository.findMaxNumberByParent(target);
+				if (maxNumber == null) {
+					maxNumber = 0.0;
+				} else {
+					maxNumber = maxNumber + 10000;
+				}
+				department.setNumber(maxNumber);
+
+				// 作为target的子节点
+				department.setParent(target);
+			} else if ("next".equals(moveType) || "prev".equals(moveType)) {
+				// 放到target之后
+				// 获取parent出来
+				Department parent = target.getParent();
+
+				// 查询比target的number还要大的一个节点
+				// 查询同级部门、数字大于number的节点，并且只要一个节点
+				Pageable pageable = PageRequest.of(0, 1);
+				Page<Department> nextPage;
+				if ("next".equals(moveType)) {
+					if (parent == null) {
+						nextPage = this.departmentRepository.findNextAndParentNull(target.getNumber(), pageable);
+					} else {
+						nextPage = this.departmentRepository.findNext(parent, target.getNumber(), pageable);
+					}
+				} else {
+					if (parent == null) {
+						nextPage = this.departmentRepository.findPrevAndParentNull(target.getNumber(), pageable);
+					} else {
+						nextPage = this.departmentRepository.findPrev(parent, target.getNumber(), pageable);
+					}
+				}
+				Double number;
+				if (nextPage.getNumberOfElements() > 0) {
+					// 有下一条记录，把前后两个数字相加求平均
+					number = (target.getNumber() + nextPage.getContent().get(0).getNumber()) / 2;
+				} else {
+					// 没有下一条记录
+					if ("next".equals(moveType)) {
+						number = target.getNumber() + 10000;
+					} else {
+						number = target.getNumber() - 10000;
+					}
+				}
+				department.setNumber(number);
+				department.setParent(parent);
+//		} else if ("prev".equals(moveType)) {
+//			Department parent = target.getParent();
+//			// 放到target之前
+//			Pageable pageable = PageRequest.of(0, 1);
+//			Page<Department> nextPage = this.departmentRepository.findPrev(parent, target.getNumber(), pageable);
+//			Double number;
+//			if (nextPage.getNumberOfElements() > 0) {
+//				// 有下一条记录，把前后两个数字相加求平均
+//				number = (target.getNumber() + nextPage.getContent().get(0).getNumber()) / 2;
+//			} else {
+//				// 没有下一条记录
+//				number = target.getNumber() - 10000;
+//			}
+//			department.setNumber(number);
+//			department.setParent(parent);
+			}
+		}
+		this.departmentRepository.save(department);
+
+		Result result = Result.of(Result.STATUS_OK, "移动成功");
 		return result;
 	}
 }

@@ -71,4 +71,15 @@ public class DepartmentAction {
 
 		return result;
 	}
+
+	@PostMapping({ "/move/{moveType}/{departmentId}/{targetDepartmentId}", "/move/{moveType}/{departmentId}/" })
+	@ResponseBody
+	public Result move(//
+			@PathVariable("moveType") String moveType, //
+			@PathVariable("departmentId") String departmentId, //
+			@PathVariable(value = "targetDepartmentId", required = false) String targetDepartmentId//
+	) {
+		Result result = this.departmentService.move(moveType, departmentId, targetDepartmentId);
+		return result;
+	}
 }

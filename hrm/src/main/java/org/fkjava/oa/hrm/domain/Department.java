@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 import org.fkjava.oa.commons.domain.UUIDEntity;
@@ -30,6 +31,8 @@ public class Department extends UUIDEntity {
 	private Department parent;
 
 	@OneToMany(mappedBy = "parent")
+	// 查询多表关联的时候，自动加上order by
+	@OrderBy(value = "number")
 	private List<Department> children;
 
 	@ManyToOne
