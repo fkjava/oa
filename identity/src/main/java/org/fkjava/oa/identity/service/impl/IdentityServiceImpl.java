@@ -100,7 +100,7 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 
 	@Transactional()
 	@Override
-	public void save(User user) {
+	public User save(User user) {
 		// 解决的问题：固定角色不要界面选择，直接加入！
 		// 查询所有固定的Role，加入到User对象里面
 		// 注意：如果有重复则要去掉！
@@ -145,12 +145,12 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 			if (old != null) {
 				if (user.getId().equals(old.getId())) {
 					// id相同，表示同一个用户，可以修改
-					this.userDao.save(user);
+					return this.userDao.save(user);
 				} else {
 					throw new IllegalArgumentException("用户的登录名已经被其他用户占用，不能修改");
 				}
 			} else {
-				this.userDao.save(user);
+				return this.userDao.save(user);
 			}
 		} else {
 			// 新增
@@ -159,7 +159,7 @@ public class IdentityServiceImpl implements IdentityService, InitializingBean {
 			if (old == null) {
 				// 用户的登录名未被占用
 				user.setStatus(UserStatus.NORMAL);
-				this.userDao.save(user);
+				return this.userDao.save(user);
 			} else {
 				throw new IllegalArgumentException("用户的登录名已经被其他用户占用，不能添加");
 			}

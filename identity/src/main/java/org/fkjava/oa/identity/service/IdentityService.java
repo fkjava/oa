@@ -16,7 +16,7 @@ public interface IdentityService {
 
 	void deleteRole(String id);
 
-	void save(User user);
+	User save(User user);
 
 	Result checkLoginName(String loginName, String id);
 
