@@ -98,6 +98,12 @@ $(function() {
 			}
 		}
 	});
+	
+	// 修改系统的alert函数
+	window.alert = function(message){
+		$("#alertDailog .message").text(message);
+		$("#alertDailog").modal();
+	};
 });
 
 // 把排序的属性，放入统一的搜索框中，然后提交搜索框
@@ -119,3 +125,4 @@ var orderBy = function(propertyName){
 	$("#commonSearchForm input[name='orderByDirection']").val(orderByDirection);
 	$("#commonSearchForm").submit();
 }
+
