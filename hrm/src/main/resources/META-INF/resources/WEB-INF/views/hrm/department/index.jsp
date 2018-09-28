@@ -62,7 +62,7 @@ var departments = ${json};
 				<div class="form-group">
 					<div class="col-sm-offset-2 col-sm-10">
 						<button type="submit" class="btn btn-primary">保存</button>
-						<button type="button" onclick="resetForm()" class="btn btn-default">复位</button>
+						<button type="button" class="btn btn-default btn-reset">复位</button>
 					</div>
 				</div>
 			</form>

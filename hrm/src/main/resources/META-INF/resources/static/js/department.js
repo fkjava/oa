@@ -62,6 +62,53 @@ $(function() {
 		}
 	};
 
+	// 删除部门
+	var removeDepartment = function(treeId, treeNode) {
+		if (treeNode.id) {
+			// 1.发送AJAX请求给服务器，删除菜单节点
+			$.ajax({
+				url : "./department/" + treeNode.id,
+				method : "delete",
+				success : function(data, status, xhr) {
+					// 2.当返回成功的时候，把节点从页面中删除，并且重置表单
+					// 删除失败，则应该显示一个对话框提示一下
+					if (data.status == 2) {
+						// 删除
+						var treeObj = $.fn.zTree.getZTreeObj(treeId);
+						treeObj.removeNode(treeNode);
+
+						// 重置表单
+						resetForm();
+
+						addedNode = false;
+					}
+
+					alert(data.message);
+				},
+				error : function(data, status, xhr) {
+					if (data.responseJSON) {
+						alert(data.responseJSON.message);
+					} else {
+						alert(data);
+					}
+				}
+			});
+		} else {
+
+			// 删除
+			var treeObj = $.fn.zTree.getZTreeObj(treeId);
+			treeObj.removeNode(treeNode);
+
+			// 重置表单
+			resetForm();
+
+			addedNode = false;
+
+			alert("删除成功");
+		}
+		return false;
+	};
+	
 	// 在表单里面显示部门的详细信息
 	var showDetailInForm = function(treeId, treeNode) {
 		$("#departmentForm #id").val(treeNode.id);
@@ -69,7 +116,7 @@ $(function() {
 		// 设置select元素的值
 		if (treeNode.owner) {
 			$("#departmentForm #selectOwner").val(treeNode.owner.id);
-		}else{
+		} else {
 			$("#departmentForm #selectOwner").val("");
 		}
 		var parentNode = treeNode.getParentNode();
@@ -82,37 +129,27 @@ $(function() {
 		}
 	};
 
-	// 删除部门
-	var removeDepartment = function(treeId, treeNode) {
-		// 1.发送AJAX请求给服务器，删除菜单节点
-		$.ajax({
-			url: "./department/" + treeNode.id,
-			method: "delete",
-			success: function(data, status, xhr){
-				// 2.当返回成功的时候，把节点从页面中删除，并且重置表单
-				// 删除失败，则应该显示一个对话框提示一下
-				if( data.status == 2 )
-				{
-					// 删除
-					var treeObj = $.fn.zTree.getZTreeObj(treeId);
-					treeObj.removeNode(treeNode);
-					
-					// 重置表单
-					resetForm();
-				}
+	// 重置表单
+	var resetForm = function() {
 
-				alert(data.message);
-			},
-			error: function(data, status, xhr){
-				if( data.responseJSON ){
-					alert(data.responseJSON.message);
-				}else{
-					alert(data);
-				}
-			}
-		});
-		return false;
+		$("#departmentForm #id").val("");
+		$("#departmentForm #inputName").val("");
+		$("#departmentForm #selectOwner").val("");
+		$("#departmentForm #parentId").val("");
+		$("#departmentForm #parentName").text("");
+
+		// 如果选中了部门的节点，重置的时候应该触发选中的事件或者把选中的部门信息显示在右边表单里面
+		var treeObj = $.fn.zTree.getZTreeObj("departmentTree");
+		var nodes = treeObj.getSelectedNodes();
+		if (nodes.length > 0) {
+			// 需要把showDetailInForm函数移除初始化代码块里面，作为全局变量来使用
+			// 如果要把showDetailInForm作为局部函数使用，那么就需要把resetForm也作为局部函数
+			showDetailInForm("departmentTree", nodes[0]);
+		}
 	};
+	// 不能直接在onclick属性里面指定函数，只能通过jQuery来绑定事件
+	$(".btn-reset").click(resetForm);
+	
 	// 对树型结构的设置
 	var setting = {
 		view : {
@@ -155,7 +192,3 @@ var beforeSubmit = function() {
 
 };
 
-// 重置表单
-var resetForm = function() {
-
-};
