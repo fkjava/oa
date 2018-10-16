@@ -8,8 +8,10 @@ import java.util.Map;
 
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.vo.ProcessForm;
+import org.fkjava.oa.workflow.vo.TaskForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 
 public interface WorkflowService {
 
@@ -50,4 +52,8 @@ public interface WorkflowService {
 	public ProcessForm getStartForm(String key);
 
 	public Result startProcessInstance(String processDefinitionId, Map<String, String[]> params);
+
+	public Page<TaskForm> findTasks(int number);
+
+	public Result complete(String taskId, Map<String, String[]> params);
 }

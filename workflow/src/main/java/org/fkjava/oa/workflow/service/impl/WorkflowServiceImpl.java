@@ -3,19 +3,33 @@ package org.fkjava.oa.workflow.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 import org.activiti.engine.FormService;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.form.StartFormData;
+import org.activiti.engine.form.TaskFormData;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.service.WorkflowService;
 import org.fkjava.oa.workflow.vo.ProcessForm;
+import org.fkjava.oa.workflow.vo.TaskForm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,6 +41,10 @@ public class WorkflowServiceImpl implements WorkflowService {
 	private FormService formService;
 	@Autowired
 	private RuntimeService runtimeService;
+	@Autowired
+	private TaskService taskService;
+	@Autowired
+	private HistoryService historyService;
 
 	@Override
 	public Result deploy(String name, InputStream in) {
@@ -130,6 +148,102 @@ public class WorkflowServiceImpl implements WorkflowService {
 		return result;
 	}
 
+	@Override
+	public Page<TaskForm> findTasks(int number) {
+		// 1.获取当前用户的ID
+		String userId = Authentication.getAuthenticatedUserId();
+		// 2.构建分页条件
+		Pageable pageable = PageRequest.of(number, 10);
+		// 3.构建查询对象
+		TaskQuery query = this.taskService.createTaskQuery();
+		// 3.1.根据任务的处理人查找数据
+		query.taskAssignee(userId);
+		// 3.2.根据任务的时间降序（倒序）
+		query.orderByTaskCreateTime().desc();
+
+		// 4.查询总记录数
+		long count = query.count();
+
+		// 5.查询当前页的数据
+		List<Task> taskList = query.listPage((int) pageable.getOffset(), pageable.getPageSize());
+
+		// 6.循环taskList，查询关联数据，构建TaskForm对象
+		List<TaskForm> result = new LinkedList<>();
+		taskList.forEach(task -> {
+			TaskForm tf = new TaskForm();
+			tf.setTask(task);
+
+			this.fillTaskForm(tf);
+			result.add(tf);
+		});
+
+		// 构建返回Page对象
+		Page<TaskForm> page = new PageImpl<>(result, pageable, count);
+		return page;
+	}
+
+	private void fillTaskForm(TaskForm tf) {
+		Task task = tf.getTask();
+		try {
+			Object content = this.formService.getRenderedTaskForm(task.getId());
+			tf.setContent(content);
+		} catch (Exception e) {
+		}
+		TaskFormData data = this.formService.getTaskFormData(task.getId());
+		ProcessDefinition definition = //
+				this.repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+		String formKey = //
+				this.formService.getTaskFormKey(definition.getId(), task.getTaskDefinitionKey());
+
+		HistoricProcessInstance instance = this.historyService.createHistoricProcessInstanceQuery()//
+				.processInstanceId(task.getProcessInstanceId())//
+				.singleResult();
+
+		tf.setData(data);
+		tf.setDefinition(definition);
+		tf.setFormKey(formKey);
+		tf.setInstance(instance);
+	}
+
+	@Override
+	public Result complete(String taskId, Map<String, String[]> params) {
+		// 1.跟启动流程实例一样，要整理参数
+		Map<String, Object> variables = new HashMap<>();
+		params.forEach((key, values) -> {
+			if (values.length == 1) {
+				variables.put(key, values[0]);
+			} else {
+				variables.put(key, values);
+			}
+		});
+
+		// 2.查询任务实例
+		Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
+
+		// 3.查询流程定义
+		ProcessDefinition definition = this.repositoryService//
+				.getProcessDefinition(task.getProcessDefinitionId());
+
+		// 4.查询流程实例
+		ProcessInstance instance = this.runtimeService//
+				.createProcessInstanceQuery()//
+				.processInstanceId(task.getProcessInstanceId())//
+				.singleResult();
+
+		// 5.更新业务数据
+		ProcessForm form = this.getStartFormById(definition.getId());
+		this.saveBusinessData(form, params);
+
+		// 6.完成任务
+		this.taskService.complete(taskId, variables);
+
+		// 7.记录流程跟踪信息
+		this.log(definition, instance, task);
+
+		Result result = Result.of(Result.STATUS_OK);
+		return result;
+	}
+
 	// 记录流程跟踪信息
 	private void log(ProcessDefinition processDefinition, ProcessInstance instance) {
 		// TODO 流程跟踪信息暂时未记录
@@ -137,7 +251,11 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 	// 保存业务数据到对应的数据库表
 	private String saveBusinessData(ProcessForm form, Map<String, String[]> params) {
-		// TODO 保存业务数据暂时不实现
+		// TODO 保存业务数据暂时不实现，需要考虑新增和修改的情况
 		return null;
+	}
+
+	private void log(ProcessDefinition definition, ProcessInstance instance, Task task) {
+		// TODO 记录任务的完成日志
 	}
 }
