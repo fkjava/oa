@@ -28,7 +28,17 @@
 
 
 	<dependencies>
-		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- 单元测试的依赖 -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 
@@ -43,6 +53,7 @@
 		<module>hrm</module>
 		<module>note</module>
 		<module>storage</module>
-        <module>exam</module>
-    </modules>
+		<module>exam</module>
+		<module>workflow</module>
+	</modules>
 </project>
