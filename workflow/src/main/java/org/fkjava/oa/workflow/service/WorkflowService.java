@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.fkjava.oa.commons.vo.Result;
+import org.fkjava.oa.workflow.vo.ProcessForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,4 +40,14 @@ public interface WorkflowService {
 			return result;
 		}
 	}
+
+	/**
+	 * 根据流程定义的KEY找到启动表单
+	 * 
+	 * @param key 
+	 * @return 返回的数据包括流程定义、表单数据、表单内容
+	 */
+	public ProcessForm getStartForm(String key);
+
+	public Result startProcessInstance(String processDefinitionId, Map<String, String[]> params);
 }

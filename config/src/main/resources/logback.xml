@@ -12,6 +12,7 @@
 	<logger name="org.apache.tomcat" level="error" />
 	<logger name="org.springframework" level="error" />
 	<logger name="org.fkjava" level="trace" />
+	<logger name="org.activiti" level="trace" />
 	<logger name="org.hibernate.SQL" level="trace" />
 	<logger name="org.hibernate.type.descriptor.sql.BasicBinder"
 		level="trace" />
