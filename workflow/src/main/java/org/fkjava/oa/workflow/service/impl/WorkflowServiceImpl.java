@@ -18,6 +18,7 @@ import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
@@ -257,5 +258,52 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 	private void log(ProcessDefinition definition, ProcessInstance instance, Task task) {
 		// TODO 记录任务的完成日志
+	}
+
+	@Override
+	public Page<ProcessDefinition> findProcessDefinitions(Integer pageNumber, String keyword, String orderByProperty,
+			String orderByDirection) {
+		ProcessDefinitionQuery query = this.repositoryService.createProcessDefinitionQuery();
+		if (keyword != null) {
+			keyword = "%" + keyword + "%";
+			query.processDefinitionNameLike(keyword);
+		}
+		// 排序属性和排序方向要按顺序设置
+		// 设置排序的属性
+		if ("key".equals(orderByProperty)) {
+			query.orderByProcessDefinitionKey();
+		} else if ("name".equals(orderByProperty)) {
+			query.orderByProcessDefinitionName();
+		} else if ("category".equals(orderByProperty)) {
+			query.orderByProcessDefinitionCategory();
+		}
+		// 设置排序方向
+		if ("asc".equals(orderByDirection)) {
+			query.asc();
+		} else {
+			query.desc();
+		}
+		// 只查询最后一个版本的流程定义
+		query.latestVersion();
+
+		// 查询总记录数
+		long count = query.count();
+
+		// 查询流程定义列表
+		Pageable pageable = PageRequest.of(pageNumber, 10);
+		List<ProcessDefinition> content = query.listPage((int) pageable.getOffset(), pageable.getPageSize());
+
+		Page<ProcessDefinition> page = new PageImpl<>(content, pageable, count);
+		return page;
+	}
+
+	@Override
+	public void suspendDefinition(String id) {
+		this.repositoryService.suspendProcessDefinitionById(id);
+	}
+
+	@Override
+	public void activeDefinition(String id) {
+		this.repositoryService.activateProcessDefinitionById(id);
 	}
 }

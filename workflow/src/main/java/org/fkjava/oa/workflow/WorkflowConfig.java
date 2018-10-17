@@ -14,6 +14,7 @@ import org.activiti.spring.ProcessEngineFactoryBean;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -98,5 +99,9 @@ public class WorkflowConfig {
 	@Bean
 	public IdentityService activitiIdentityService(@Autowired ProcessEngine processEngine) {
 		return processEngine.getIdentityService();
+	}
+
+	public static void main(String[] args) {
+		SpringApplication.run(WorkflowConfig.class, args);
 	}
 }

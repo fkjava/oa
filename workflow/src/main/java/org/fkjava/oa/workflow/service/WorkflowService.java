@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.activiti.engine.repository.ProcessDefinition;
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.vo.ProcessForm;
 import org.fkjava.oa.workflow.vo.TaskForm;
@@ -56,4 +57,11 @@ public interface WorkflowService {
 	public Page<TaskForm> findTasks(int number);
 
 	public Result complete(String taskId, Map<String, String[]> params);
+
+	public Page<ProcessDefinition> findProcessDefinitions(Integer pageNumber, String keyword, String orderByProperty,
+			String orderByDirection);
+
+	public void suspendDefinition(String id);
+
+	public void activeDefinition(String id);
 }
