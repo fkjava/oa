@@ -17,7 +17,10 @@
 	<%-- 整个完成任务的页面，基本上就是启动流程实例的页面 --%>
 	<%-- 要改的主要就是action的值，完成任务提交到另外一个控制方法 --%>
     <div class="col-md-12 table-responsive">
-	    <form action="${ctx }/workflow/task/${form.task.id}" method="post" enctype="multipart/form-data">
+	    <form action="${ctx }/workflow/task/${form.task.id}" 
+	    	method="post" 
+	    	enctype="multipart/form-data"
+	    	onsubmit="return checkOnSubmit()">
 	    	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 	    	<c:if test="${not empty form.definition.description }">
     			<div class="alert alert-info" role="alert">

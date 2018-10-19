@@ -15,7 +15,10 @@
 		<h2 class="col-md-6">启动【${form.definition.name }】流程</h2>
 	</div>
     <div class="col-md-12 table-responsive">
-	    <form action="${ctx }/workflow/instance/${form.definition.id}" method="post" enctype="multipart/form-data">
+	    <form action="${ctx }/workflow/instance/${form.definition.id}" 
+	    	method="post" 
+	    	enctype="multipart/form-data"
+	    	onsubmit="return checkOnSubmit()">
 	    	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 	    	<c:if test="${not empty form.definition.description }">
     			<div class="alert alert-info" role="alert">
