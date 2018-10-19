@@ -1,5 +1,7 @@
 package org.fkjava.oa.workflow;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.activiti.engine.FormService;
@@ -10,8 +12,10 @@ import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.activiti.spring.SpringProcessEngineConfiguration;
+import org.fkjava.oa.security.vo.UserDetails;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -19,14 +23,64 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration // 自动配置
 @SpringBootApplication // 表示这是一个Spring Boot的应用
 @ComponentScan("org.fkjava")
 @EnableTransactionManagement // 激活事务。但是使用JPA其实已经激活了事务！
-public class WorkflowConfig {
+public class WorkflowConfig implements WebMvcConfigurer {
+
+	/**
+	 * 增加拦截器，用于告诉流程引擎，当前用户是谁！
+	 */
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		// 得到一个拦截器实例
+		HandlerInterceptor ai = authInterceptor();
+//		registry.addInterceptor(ai)// 添加拦截器
+//				.addPathPatterns("/**")// 配置拦截器的路径
+//				.excludePathPatterns("/static/**", //
+//						"/webjars/**", //
+//						"/security/login", //
+//						"/security/do-login", //
+//						"/security/do-logout")// 排除哪些路径
+//				.order(10000)// 让此拦截器放到后面一点，确保已经完成了登录
+//		;
+		registry.addInterceptor(ai)//
+				.addPathPatterns("/workflow/**")//
+				.order(10000)//
+		;
+	}
+
+	@Bean
+	public HandlerInterceptor authInterceptor() {
+		HandlerInterceptor ai = new HandlerInterceptor() {
+			@Override
+			public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+					throws Exception {
+
+				if (SecurityContextHolder.getContext().getAuthentication() != null
+						&& SecurityContextHolder.getContext().getAuthentication().getPrincipal() != null) {
+					// 获取登录后的用户信息
+					UserDetails ud = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
+							.getPrincipal();
+					// 得到用户的ID
+					String userId = ud.getId();
+					// 告诉流程引擎当前用户是谁！
+					Authentication.setAuthenticatedUserId(userId);
+				}
+
+				return HandlerInterceptor.super.preHandle(request, response, handler);
+			}
+		};
+		return ai;
+	}
 
 	// 1.配置流程引擎
 	@Bean

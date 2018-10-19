@@ -25,7 +25,10 @@ import org.activiti.engine.task.TaskQuery;
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.service.WorkflowService;
 import org.fkjava.oa.workflow.vo.ProcessForm;
+import org.fkjava.oa.workflow.vo.ProcessImage;
 import org.fkjava.oa.workflow.vo.TaskForm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(WorkflowServiceImpl.class);
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -97,10 +101,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 			if (definition.hasStartFormKey()) {
 				// 表单文件对应的内容
 				Object content = this.formService.getRenderedStartForm(definition.getId());
-				// 表单文件的名称
-				String formKey = this.formService.getStartFormKey(definition.getId());
-
-				form.setFormKey(formKey);
 				form.setContent(content);
 			}
 		} catch (Exception e) {
@@ -108,6 +108,10 @@ public class WorkflowServiceImpl implements WorkflowService {
 			// 没有【开始表单】，意味着不需要查询表单内容
 			// 所以这里出现异常什么都不处理
 		}
+		// 表单文件的名称
+		String formKey = this.formService.getStartFormKey(definition.getId());
+
+		form.setFormKey(formKey);
 
 		// 查询表单数据，里面会包含表单属性
 		StartFormData data = this.formService.getStartFormData(definition.getId());
@@ -128,6 +132,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 				variables.put(key, values);
 			}
 		});
+		// 把备注信息获取出来，后面用于记录流程跟踪信息
+		String remark = (String) variables.remove("remark");
 
 		// 2.获取流程定义
 		ProcessForm form = this.getStartFormById(processDefinitionId);
@@ -143,7 +149,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 				variables);
 
 		// 5.记录流程跟踪信息
-		this.log(form.getDefinition(), instance);
+		this.log(form.getDefinition(), instance, remark);
 
 		Result result = Result.of(Result.STATUS_OK);
 		return result;
@@ -217,6 +223,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 				variables.put(key, values);
 			}
 		});
+		// 从Map里面删除一个键值对的时候，会返回key对应的value
+		String remark = (String) variables.remove("remark");
 
 		// 2.查询任务实例
 		Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
@@ -239,14 +247,14 @@ public class WorkflowServiceImpl implements WorkflowService {
 		this.taskService.complete(taskId, variables);
 
 		// 7.记录流程跟踪信息
-		this.log(definition, instance, task);
+		this.log(definition, instance, task, remark);
 
 		Result result = Result.of(Result.STATUS_OK);
 		return result;
 	}
 
 	// 记录流程跟踪信息
-	private void log(ProcessDefinition processDefinition, ProcessInstance instance) {
+	private void log(ProcessDefinition processDefinition, ProcessInstance instance, String remark) {
 		// TODO 流程跟踪信息暂时未记录
 	}
 
@@ -256,7 +264,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 		return null;
 	}
 
-	private void log(ProcessDefinition definition, ProcessInstance instance, Task task) {
+	private void log(ProcessDefinition definition, ProcessInstance instance, Task task, String remark) {
 		// TODO 记录任务的完成日志
 	}
 
@@ -305,5 +313,19 @@ public class WorkflowServiceImpl implements WorkflowService {
 	@Override
 	public void activeDefinition(String id) {
 		this.repositoryService.activateProcessDefinitionById(id);
+	}
+
+	@Override
+	public ProcessImage getDefinitionImage(String id) {
+		ProcessDefinition definition = this.repositoryService.getProcessDefinition(id);
+		String name = definition.getDiagramResourceName();// 图片名称
+		try (InputStream in = this.repositoryService.getProcessDiagram(id);) {
+
+			ProcessImage image = new ProcessImage(name, in);
+			return image;
+		} catch (IOException e) {
+			LOG.error("无法获取流程图：" + e.getMessage(), e);
+		}
+		return null;
 	}
 }

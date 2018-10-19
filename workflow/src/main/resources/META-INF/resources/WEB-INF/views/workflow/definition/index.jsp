@@ -50,7 +50,10 @@
 	                			<span class="glyphicon glyphicon-ban-circle"></span>禁用
                 			</a>
 	                	</c:if>
-	                	详情
+	                	<a class="btn btn-xs btn-info"  href="${ctx }/workflow/definition/${u.key}">
+	                		<span class="glyphicon glyphicon-th-list"></span>
+	                		详情
+                		</a>
 	                </td>
 	            </tr>
 	            </c:forEach>

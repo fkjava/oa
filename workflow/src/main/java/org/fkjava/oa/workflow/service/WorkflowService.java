@@ -9,6 +9,7 @@ import java.util.Map;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.vo.ProcessForm;
+import org.fkjava.oa.workflow.vo.ProcessImage;
 import org.fkjava.oa.workflow.vo.TaskForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,4 +65,6 @@ public interface WorkflowService {
 	public void suspendDefinition(String id);
 
 	public void activeDefinition(String id);
+
+	public ProcessImage getDefinitionImage(String id);
 }
