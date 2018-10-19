@@ -50,6 +50,22 @@
 	    	<fieldset class="col-xs-12 col-sm-12">
 	    		<legend>操作</legend>
 	    		<div style="text-align: right;">
+	    			<%-- 显示操作选项 --%>
+	    			<%-- TaskForm.getData().getFormProperties() --%>
+	    			<c:forEach items="${form.data.formProperties }" var="fp">
+	    				<%-- 只处理枚举类型 --%>
+	    				<c:if test="${fp.type.name eq 'enum' }">
+<%-- 	    					${fp.name } --%>
+							<%-- FormProperty.getType.getInformation('values') --%>
+							<c:forEach items="${fp.type.getInformation('values') }" var="kv">
+								<label>
+									${kv.key }
+									<input type="radio" name="${fp.id }" value="${kv.value }"/>
+								</label>
+							</c:forEach>
+	    				</c:if>
+	    			</c:forEach>
+	    		
 	    			<button type="submit" class="btn btn-primary">提交</button>
 	    		</div>
 	    	</fieldset>
