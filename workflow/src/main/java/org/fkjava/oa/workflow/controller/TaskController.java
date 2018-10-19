@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,9 +27,19 @@ public class TaskController {
 			@RequestParam(value = "orderByDirection", defaultValue = "desc") String orderByDirection//
 	) {
 		ModelAndView mav = new ModelAndView("workflow/task/index");
-		
+
 		Page<TaskForm> page = this.workflowService.findTasks(pageNumber, keyword, orderByProperty, orderByDirection);
 		mav.addObject("page", page);
+
+		return mav;
+	}
+
+	@GetMapping("{id}")
+	public ModelAndView detail(@PathVariable("id") String id) {
+		ModelAndView mav = new ModelAndView("workflow/task/detail");
+		
+		TaskForm tf = this.workflowService.getTaskForm(id);
+		mav.addObject("form", tf);
 		
 		return mav;
 	}

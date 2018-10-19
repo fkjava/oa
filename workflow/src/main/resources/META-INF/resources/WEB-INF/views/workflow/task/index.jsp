@@ -46,5 +46,19 @@
 	        </tfoot>
 	    </table>
 	</div>
+	<style type="text/css">
+		tbody tr
+		{
+			cursor: pointer;
+		}
+	</style>
+	<script type="text/javascript">
+		$("tbody tr").click(function(){
+			var tr = $(this);
+			// 获取任务的id
+			var id = tr.attr("data-id");
+			document.location.href = "${ctx}/workflow/task/" + id;
+		});
+	</script>
 </body>
 </html>

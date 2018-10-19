@@ -343,4 +343,18 @@ public class WorkflowServiceImpl implements WorkflowService {
 		}
 		return null;
 	}
+
+	@Override
+	public TaskForm getTaskForm(String id) {
+
+		// 根据id查询一个任务
+		Task task = this.taskService.createTaskQuery().taskId(id).singleResult();
+
+		TaskForm tf = new TaskForm();
+		tf.setTask(task);
+
+		this.fillTaskForm(tf);
+
+		return tf;
+	}
 }

@@ -7,33 +7,56 @@
 <html>
 <head>
 <meta name="decorator" content="/WEB-INF/layouts/main.jsp">
-<title>流程详情</title>
+<title>任务详情</title>
+<link rel="stylesheet" href="${ctx }/webjars/Eonasdan-bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css"/>
 </head>
 <body>
 	<div class="col-md-12 sub-header">
-		<h2 class="col-md-6">流程详情</h2>
+		<h2 class="col-md-6">处理任务</h2>
 	</div>
+	<%-- 整个完成任务的页面，基本上就是启动流程实例的页面 --%>
+	<%-- 要改的主要就是action的值，完成任务提交到另外一个控制方法 --%>
     <div class="col-md-12 table-responsive">
-	    <div class="col-xs-4 col-sm-2">
-	    	流程名称
-	    </div>
-	    <div class="col-xs-8 col-sm-10">
-	    	${form.definition.name }
-	    </div>
-	    <div class="col-xs-4 col-sm-2">
-	    	是否被禁用
-	    </div>
-	    <div class="col-xs-8 col-sm-10">
-	    	<c:choose>
-	    		<c:when test="${form.definition.suspended }">
-	    			已禁用
-	    		</c:when>
-	    		<c:otherwise>正常</c:otherwise>
-	    	</c:choose>
-	    </div>
-	    <div class="col-xs-12">
-	    	<img alt="流程图无法获取" src="${ctx }/workflow/definition/image/${form.definition.id}"/>
-	    </div>
+	    <form action="${ctx }/workflow/task/${form.task.id}" method="post" enctype="multipart/form-data">
+	    	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+	    	<c:if test="${not empty form.definition.description }">
+    			<div class="alert alert-info" role="alert">
+    				<p>${form.definition.description }</p>
+    				<c:if test="${not empty form.task.description }">
+    				<p>${form.task.description }</p>
+    				</c:if>
+    			</div>
+	    	</c:if>
+	    	<c:if test="${not empty form.content }">
+	    	${form.content }
+	    	</c:if>
+	    	<c:if test="${empty form.content and not empty form.formKey }">
+	    		<c:catch var="ex">
+	    			<jsp:include page="/WEB-INF/views/process/${form.definition.key }/${form.formKey }"></jsp:include>
+	    		</c:catch>
+	    	</c:if>
+	    	<%-- 包含JSP文件出现异常，或者没有formKey --%>
+	    	<%-- 没有formKey，肯定没有表单内容 --%>
+    		<c:if test="${not empty ex or empty form.formKey }">
+    			<div class="alert alert-warning" role="alert">
+    				没有找到流程的业务表单，无法显示表单内容
+    			</div>
+    		</c:if>
+	    	<fieldset class="col-xs-12 col-sm-12">
+	    		<legend>备注</legend>
+	    		<%-- 备注可以使用富文本编辑器 --%>
+	    		<textarea name="remark" rows="10" class="form-control"></textarea>
+	    	</fieldset>
+	    	<fieldset class="col-xs-12 col-sm-12">
+	    		<legend>操作</legend>
+	    		<div style="text-align: right;">
+	    			<button type="submit" class="btn btn-primary">提交</button>
+	    		</div>
+	    	</fieldset>
+	    </form>
 	</div>
+	<script type="text/javascript" src="${ctx }/webjars/momentjs/2.10.3/min/moment-with-locales.min.js"></script>
+	<script type="text/javascript" src="${ctx }/webjars/Eonasdan-bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
+	<script type="text/javascript" src="${ctx }/static/js/workflow.js" charset="UTF-8"></script>
 </body>
 </html>

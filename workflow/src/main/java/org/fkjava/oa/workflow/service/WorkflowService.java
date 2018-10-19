@@ -75,4 +75,6 @@ public interface WorkflowService {
 	public void activeDefinition(String id);
 
 	public ProcessImage getDefinitionImage(String id);
+
+	public TaskForm getTaskForm(String id);
 }
