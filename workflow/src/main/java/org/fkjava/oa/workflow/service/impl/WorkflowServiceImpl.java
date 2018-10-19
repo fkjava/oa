@@ -2,10 +2,13 @@ package org.fkjava.oa.workflow.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.ZipInputStream;
 
 import org.activiti.engine.FormService;
@@ -13,6 +16,7 @@ import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
@@ -22,6 +26,9 @@ import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.fkjava.oa.commons.DatePropertyEditor;
+import org.fkjava.oa.commons.domain.BusinessData;
+import org.fkjava.oa.commons.repository.BusinessDataRepository;
 import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.service.WorkflowService;
 import org.fkjava.oa.workflow.vo.ProcessForm;
@@ -29,16 +36,22 @@ import org.fkjava.oa.workflow.vo.ProcessImage;
 import org.fkjava.oa.workflow.vo.TaskForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.WebDataBinder;
 
 @Service
-public class WorkflowServiceImpl implements WorkflowService {
+public class WorkflowServiceImpl implements WorkflowService, ApplicationContextAware {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WorkflowServiceImpl.class);
 	@Autowired
@@ -51,6 +64,13 @@ public class WorkflowServiceImpl implements WorkflowService {
 	private TaskService taskService;
 	@Autowired
 	private HistoryService historyService;
+
+	private ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
 
 	@Override
 	public Result deploy(String name, InputStream in) {
@@ -268,15 +288,98 @@ public class WorkflowServiceImpl implements WorkflowService {
 		return result;
 	}
 
+	// 保存业务数据到对应的数据库表
+	@SuppressWarnings("unchecked")
+	private String saveBusinessData(ProcessForm form, Map<String, String[]> params) {
+		// 1.找出开始事件的表单数据
+		StartFormData formData = this.formService.getStartFormData(form.getDefinition().getId());
+		// 2.获取实体类名和DAO的类名
+		String businessDataClassName = null;
+		String businessDataDaoClassName = null;
+		for (FormProperty fp : formData.getFormProperties()) {
+			// 根据表单属性的id，获取对应表单属性的值
+			if ("businessDataClassName".equals(fp.getId())) {
+				businessDataClassName = fp.getValue();
+			} else if ("businessDataDaoClassName".equals(fp.getId())) {
+				businessDataDaoClassName = fp.getValue();
+			}
+		}
+		if (businessDataClassName == null || businessDataDaoClassName == null) {
+			// 两种必须同时存在，才能保存业务数据
+			LOG.debug("业务数据的类名，或者业务数据DAO的类名，没有配置在流程定义的开始事件中，无法保存业务数据");
+			return null;
+		}
+
+		// 3.根据类名加载Class文件
+		Class<BusinessData> businessDataClass;
+		try {
+			businessDataClass = (Class<BusinessData>) Class.forName(businessDataClassName);
+		} catch (ClassNotFoundException e) {
+			LOG.warn("配置了业务数据的实体类名，但是无法加载此类: " + e.getMessage(), e);
+			return null;
+		}
+		Class<BusinessDataRepository<BusinessData>> businessDataDaoClass;
+		try {
+			businessDataDaoClass = (Class<BusinessDataRepository<BusinessData>>) Class
+					.forName(businessDataDaoClassName);
+		} catch (ClassNotFoundException e) {
+			LOG.warn("配置了业务数据的实体DAO的类名，但是无法加载DAO类: " + e.getMessage(), e);
+			return null;
+		}
+
+		// 4.转换请求参数为业务数据对象
+		BusinessData data;
+		try {
+			data = businessDataClass.getConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			LOG.warn("配置了业务数据的实体类名，但无法创建此类的实例: " + e.getMessage(), e);
+			return null;
+		}
+		// WebDataBinder binder = new WebDataBinder(data);
+		WebDataBinder binder = getWebDataBinder(data);
+		PropertyValues pvs = new MutablePropertyValues(params);
+		binder.bind(pvs);// 执行转换
+
+		// 5.获取DAO接口的实例，并调用save方法
+		BusinessDataRepository<BusinessData> dao = this.applicationContext.getBean(businessDataDaoClass);
+
+		// 由于业务数据的主键，不是自动生成的，所以需要判断如果没有主键需要自己生成一个
+		if (StringUtils.isEmpty(data.getId())) {
+			String id = UUID.randomUUID().toString();
+			data.setId(id);
+
+			// 设置哪个用户提交的申请
+			data.setUserId(Authentication.getAuthenticatedUserId());
+			// 设置什么时候提交的申请
+			data.setSubmitTime(new Date());
+		} else {
+			BusinessData old = dao.getOne(data.getId());
+			data.setUserId(old.getUserId());
+			data.setSubmitTime(old.getSubmitTime());
+
+			// 删除id对应的数据，然后重新插入
+			// 解决一对多关系中，多端被删除部分然后再重新插入新记录的情况，这种情况可能会导致多端的外键改为null
+			dao.deleteById(data.getId());
+			// 把删除的操作，刷新到数据库去！
+			dao.flush();
+		}
+		data = dao.save(data);
+
+		// 返回业务数据的主键，用于关联流程实例和业务数据
+		return data.getId();
+	}
+
+	private WebDataBinder getWebDataBinder(BusinessData data) {
+		WebDataBinder binder = new WebDataBinder(data);
+		// 注册自定义转换器
+		binder.registerCustomEditor(Date.class, new DatePropertyEditor("yyyy-MM-dd HH:mm"));
+		return binder;
+	}
+
 	// 记录流程跟踪信息
 	private void log(ProcessDefinition processDefinition, ProcessInstance instance, String remark) {
 		// TODO 流程跟踪信息暂时未记录
-	}
-
-	// 保存业务数据到对应的数据库表
-	private String saveBusinessData(ProcessForm form, Map<String, String[]> params) {
-		// TODO 保存业务数据暂时不实现，需要考虑新增和修改的情况
-		return null;
 	}
 
 	private void log(ProcessDefinition definition, ProcessInstance instance, Task task, String remark) {

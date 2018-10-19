@@ -9,8 +9,8 @@
 &lt;/ul&gt;</documentation>
     <startEvent id="startevent1" name="Start" activiti:initiator="createUserId" activiti:formKey="LeaveRequestCreate.html">
       <extensionElements>
-        <activiti:formProperty id="businessDataClassName" name="业务数据的类名" type="string" default="org.fkjava.lms.leave.domain.Leave"></activiti:formProperty>
-        <activiti:formProperty id="businessDataDaoClassName" name="操作业务数据的类名" type="string" default="org.fkjava.lms.leave.dao.impl.LeaveDaoImpl"></activiti:formProperty>
+        <activiti:formProperty id="businessDataClassName" name="业务数据的类名" type="string" default="org.fkjava.oa.hrm.domain.Leave"></activiti:formProperty>
+        <activiti:formProperty id="businessDataDaoClassName" name="操作业务数据的类名" type="string" default="org.fkjava.oa.hrm.dao.LeaveRepository"></activiti:formProperty>
       </extensionElements>
     </startEvent>
     <userTask id="usertask1" name="直接领导审批" activiti:assignee="admin" activiti:formKey="LeaveRequestTask.html">
