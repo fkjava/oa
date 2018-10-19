@@ -104,6 +104,10 @@
 			</div>
 		</c:forEach>
 	</fieldset>
+	<fieldset class="col-xs-12">
+		<legend>流程图</legend>
+		<img style="width: 100%;" src="${ctx }/workflow/history/instance/image/${form.instance.id}"/>
+	</fieldset>
 	<script type="text/javascript" src="${ctx }/webjars/momentjs/2.10.3/min/moment-with-locales.min.js"></script>
 	<script type="text/javascript" src="${ctx }/webjars/Eonasdan-bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
 	<script type="text/javascript" src="${ctx }/static/js/workflow.js" charset="UTF-8"></script>

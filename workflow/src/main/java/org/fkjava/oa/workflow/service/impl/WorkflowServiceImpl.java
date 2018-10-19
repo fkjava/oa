@@ -1,5 +1,10 @@
 package org.fkjava.oa.workflow.service.impl;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -11,6 +16,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipInputStream;
 
+import javax.imageio.ImageIO;
+
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.GraphicInfo;
 import org.activiti.engine.FormService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
@@ -572,5 +581,51 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 		// getOne可能会因为对象不存在而出现异常
 		BusinessData data = dao.findById(businessKey).orElse(null);
 		return data;
+	}
+
+	@Override
+	public ProcessImage getInstanceImage(String processInstanceId) {
+		ProcessInstance instance = this.runtimeService.createProcessInstanceQuery()//
+				.processInstanceId(processInstanceId)//
+				.singleResult();
+		// 先获取静态的流程图
+		InputStream in = this.repositoryService.getProcessDiagram(instance.getProcessDefinitionId());
+		// 获取当前活动的环节
+		List<String> ids = this.runtimeService.getActiveActivityIds(instance.getId());
+		// 获取BPMN模型，在模型里面有图形信息
+		BpmnModel model = this.repositoryService.getBpmnModel(instance.getProcessDefinitionId());
+		// 根据活动的环节和图形信息，绘制矩形
+		try {
+			BufferedImage bufferedImage = ImageIO.read(in);
+			Graphics2D g2d = bufferedImage.createGraphics();
+			g2d.setColor(Color.RED);// 颜色
+			g2d.setStroke(new BasicStroke(2.0f));// 线宽
+
+			// 活动环节的key
+			ids.forEach(key -> {
+				GraphicInfo gi = model.getGraphicInfo(key);
+				int x = (int) gi.getX();
+				int y = (int) gi.getY();
+				int width = (int) gi.getWidth();
+				int height = (int) gi.getHeight();
+
+				g2d.drawRoundRect(x, y, width, height, 20, 20);
+			});
+			// 销毁画笔
+			g2d.dispose();
+
+			// 把图片输出到字节数组
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ImageIO.write(bufferedImage, "png", out);
+			byte[] data = out.toByteArray();
+
+			ProcessImage image = new ProcessImage(processInstanceId + ".png", data);
+			return image;
+
+		} catch (IOException e) {
+			LOG.error("绘制动态流程图出现问题: " + e.getMessage(), e);
+		}
+		// 如果出现异常，则返回静态的流程图
+		return this.getDefinitionImage(instance.getProcessDefinitionId());
 	}
 }
