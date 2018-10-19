@@ -9,6 +9,10 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.fkjava.oa.commons.DateTimeConverter;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 @MappedSuperclass
 public abstract class BusinessData implements Serializable {
 
@@ -31,6 +35,7 @@ public abstract class BusinessData implements Serializable {
 
 	// 什么时候提交的申请
 	@Temporal(TemporalType.TIMESTAMP)
+	@JsonSerialize(converter = DateTimeConverter.class)
 	private Date submitTime;
 
 	public String getId() {

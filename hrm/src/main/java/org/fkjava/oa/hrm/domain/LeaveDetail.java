@@ -9,7 +9,11 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.fkjava.oa.commons.DateTimeConverter;
+import org.fkjava.oa.commons.DateTimeSerializer;
 import org.fkjava.oa.commons.domain.UUIDEntity;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Entity
 @Table(name = "hrm_leave_detail")
@@ -23,11 +27,13 @@ public class LeaveDetail extends UUIDEntity {
 	 * 什么时候开始请假
 	 */
 	@Temporal(TemporalType.TIMESTAMP)
+	@JsonSerialize(using = DateTimeSerializer.class)
 	private Date startTime;
 	/**
 	 * 请假到什么时候截止
 	 */
 	@Temporal(TemporalType.TIMESTAMP)
+	@JsonSerialize(converter = DateTimeConverter.class)
 	private Date endTime;
 	/**
 	 * 请假的类型

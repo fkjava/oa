@@ -458,6 +458,38 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 
 		this.fillTaskForm(tf);
 
+		// 查询业务数据
+		BusinessData data = this.getBusinessData(tf.getDefinition(), tf.getInstance().getBusinessKey());
+		tf.setBusinessData(data);
+
 		return tf;
+	}
+
+	@SuppressWarnings("unchecked")
+	private BusinessData getBusinessData(ProcessDefinition definition, String businessKey) {
+		// 1.获取启动表单数据
+		StartFormData formData = this.formService.getStartFormData(definition.getId());
+		// 2.得到DAO类的类型
+		String businessDataDaoClassName = null;
+		for (FormProperty fp : formData.getFormProperties()) {
+			// 根据表单属性的id，获取对应表单属性的值
+			if ("businessDataDaoClassName".equals(fp.getId())) {
+				businessDataDaoClassName = fp.getValue();
+			}
+		}
+		Class<BusinessDataRepository<BusinessData>> businessDataDaoClass;
+		try {
+			businessDataDaoClass = (Class<BusinessDataRepository<BusinessData>>) Class
+					.forName(businessDataDaoClassName);
+		} catch (ClassNotFoundException e) {
+			LOG.warn("配置了业务数据的实体DAO的类名，但是无法加载DAO类: " + e.getMessage(), e);
+			return null;
+		}
+		// 3.获取DAO的实例
+		BusinessDataRepository<BusinessData> dao = this.applicationContext.getBean(businessDataDaoClass);
+		// 4.调用查询方法
+		// getOne可能会因为对象不存在而出现异常
+		BusinessData data = dao.findById(businessKey).orElse(null);
+		return data;
 	}
 }

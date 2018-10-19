@@ -11,6 +11,10 @@
 <link rel="stylesheet" href="${ctx }/webjars/Eonasdan-bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css"/>
 </head>
 <body>
+	<script type="text/javascript">
+	// 使用一个JavaScript变量存储业务数据
+	var businessData = ${json};
+	</script>
 	<div class="col-md-12 sub-header">
 		<h2 class="col-md-6">处理任务</h2>
 	</div>
@@ -22,6 +26,8 @@
 	    	enctype="multipart/form-data"
 	    	onsubmit="return checkOnSubmit()">
 	    	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+	    	<%-- 业务数据的主键值要存储起来，否则后面只会不断新增数据、不能修改数据 --%>
+	    	<input type="hidden" name="id" value="${form.instance.businessKey }"/>
 	    	<c:if test="${not empty form.definition.description }">
     			<div class="alert alert-info" role="alert">
     				<p>${form.definition.description }</p>
