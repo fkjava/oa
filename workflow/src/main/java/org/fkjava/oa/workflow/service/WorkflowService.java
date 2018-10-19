@@ -48,14 +48,22 @@ public interface WorkflowService {
 	/**
 	 * 根据流程定义的KEY找到启动表单
 	 * 
-	 * @param key 
+	 * @param key
 	 * @return 返回的数据包括流程定义、表单数据、表单内容
 	 */
 	public ProcessForm getStartForm(String key);
 
 	public Result startProcessInstance(String processDefinitionId, Map<String, String[]> params);
 
-	public Page<TaskForm> findTasks(int number);
+	/**
+	 * 
+	 * @param number           页码
+	 * @param keyword          关键字，根据关键字过滤任务名称
+	 * @param orderByProperty  排序属性
+	 * @param orderByDirection 排序方向
+	 * @return
+	 */
+	public Page<TaskForm> findTasks(int number, String keyword, String orderByProperty, String orderByDirection);
 
 	public Result complete(String taskId, Map<String, String[]> params);
 

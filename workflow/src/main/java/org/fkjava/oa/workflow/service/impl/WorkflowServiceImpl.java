@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -156,7 +157,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 	}
 
 	@Override
-	public Page<TaskForm> findTasks(int number) {
+	public Page<TaskForm> findTasks(int number, String keyword, String orderByProperty, String orderByDirection) {
 		// 1.获取当前用户的ID
 		String userId = Authentication.getAuthenticatedUserId();
 		// 2.构建分页条件
@@ -166,7 +167,21 @@ public class WorkflowServiceImpl implements WorkflowService {
 		// 3.1.根据任务的处理人查找数据
 		query.taskAssignee(userId);
 		// 3.2.根据任务的时间降序（倒序）
-		query.orderByTaskCreateTime().desc();
+		if ("createTime".equals(orderByProperty)) {
+			query.orderByTaskCreateTime();
+		} else if ("taskName".equals(orderByProperty)) {
+			query.orderByTaskName();
+		}
+		if ("desc".equals(orderByDirection)) {
+			query.desc();
+		} else {
+			query.asc();
+		}
+		// 按关键字查询的时候，过滤任务的名称
+		if (!StringUtils.isEmpty(keyword)) {
+			keyword = "%" + keyword + "%";
+			query.taskNameLike(keyword);
+		}
 
 		// 4.查询总记录数
 		long count = query.count();

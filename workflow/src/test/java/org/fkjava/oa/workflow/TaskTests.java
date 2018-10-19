@@ -38,7 +38,7 @@ public class TaskTests extends BasicProcessTests {
 	public void findTask() {
 		// 找出当前用户的待办任务
 		int number = 0;// 页码
-		Page<TaskForm> page = this.workflowService.findTasks(number);
+		Page<TaskForm> page = this.workflowService.findTasks(number, null, "createTime", "desc");
 
 		Assert.assertNotNull("返回一页的待办任务，不能为空。但现在返回为null", page);
 		Assert.assertTrue("必须要找到有待办任务，现在没有找到", page.getNumberOfElements() > 0);
@@ -47,7 +47,7 @@ public class TaskTests extends BasicProcessTests {
 	@Test
 	public void completeTask() {
 		int number = 0;// 页码
-		Page<TaskForm> page = this.workflowService.findTasks(number);
+		Page<TaskForm> page = this.workflowService.findTasks(number, null, "createTime", "desc");
 		page.getContent().forEach(tf -> {
 			Map<String, String[]> params = new HashMap<>();
 			String taskId = tf.getTask().getId();

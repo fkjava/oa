@@ -48,7 +48,7 @@ public class TaskTests2 extends BasicProcessTests {
 	private void test(String x, String action) {
 
 		int number = 0;// 页码
-		Page<TaskForm> page = this.workflowService.findTasks(number);
+		Page<TaskForm> page = this.workflowService.findTasks(number, null, "createTime", "desc");
 		page.getContent().forEach(tf -> {
 			Map<String, String[]> params = new HashMap<>();
 			// key要跟配置在Form标签里面的id相同
@@ -63,7 +63,7 @@ public class TaskTests2 extends BasicProcessTests {
 			Assert.assertEquals(Result.STATUS_OK, result.getStatus());
 		});
 
-		page = this.workflowService.findTasks(number);
+		page = this.workflowService.findTasks(number, null, "createTime", "desc");
 		List<TaskForm> list = page.getContent();
 		Assert.assertNotNull(list);
 		// 预期【走第二】以后，新的任务名称应该是【第二个任务】
