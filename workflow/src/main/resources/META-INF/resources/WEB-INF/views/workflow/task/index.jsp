@@ -60,5 +60,15 @@
 			document.location.href = "${ctx}/workflow/task/" + id;
 		});
 	</script>
+	
+	<c:if test="${not empty sessionScope.result }">
+	<script type="text/javascript">
+		$(function(){
+			alert("任务处理成功！");
+		});
+	</script>
+	<%-- 把Session里面的结果删除掉 --%>
+	<c:remove var="result" scope="session"/>
+	</c:if>
 </body>
 </html>

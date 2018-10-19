@@ -23,6 +23,7 @@
 
 	<script type="text/javascript" src="${ctx }/webjars/jquery/1.11.1/jquery.min.js"></script>
 	<script type="text/javascript" src="${ctx }/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="${ctx }/static/js/main.js" charset="UTF-8"></script>
 
 	<%-- _csrf_header、_csrf是为了解决AJAX结合Spring Security的时候，出现403错误的。 --%>
 	<meta name="_csrf_header" content="${_csrf.headerName}"/>
@@ -124,8 +125,5 @@
     <script src="${ctx }/static/js/vendor/holder.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="${ctx }/static/js/ie10-viewport-bug-workaround.js"></script>
-    
-    <script type="text/javascript" src="${ctx }/static/js/main.js" charset="UTF-8">
-    </script>
   </body>
 </html>

@@ -45,7 +45,7 @@
 	    	<fieldset class="col-xs-12 col-sm-12">
 	    		<legend>备注</legend>
 	    		<%-- 备注可以使用富文本编辑器 --%>
-	    		<textarea name="remark" rows="10" class="form-control"></textarea>
+	    		<textarea name="remark" rows="10" class="form-control" required="required"></textarea>
 	    	</fieldset>
 	    	<fieldset class="col-xs-12 col-sm-12">
 	    		<legend>操作</legend>
@@ -60,7 +60,7 @@
 							<c:forEach items="${fp.type.getInformation('values') }" var="kv">
 								<label>
 									${kv.key }
-									<input type="radio" name="${fp.id }" value="${kv.value }"/>
+									<input type="radio" name="${fp.id }" value="${kv.value }" required="required"/>
 								</label>
 							</c:forEach>
 	    				</c:if>

@@ -1,5 +1,8 @@
 package org.fkjava.oa.workflow.controller;
 
+import java.util.Map;
+
+import org.fkjava.oa.commons.vo.Result;
 import org.fkjava.oa.workflow.service.WorkflowService;
 import org.fkjava.oa.workflow.vo.TaskForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -37,10 +42,22 @@ public class TaskController {
 	@GetMapping("{id}")
 	public ModelAndView detail(@PathVariable("id") String id) {
 		ModelAndView mav = new ModelAndView("workflow/task/detail");
-		
+
 		TaskForm tf = this.workflowService.getTaskForm(id);
 		mav.addObject("form", tf);
-		
+
+		return mav;
+	}
+
+	@PostMapping("{id}")
+	public ModelAndView complete(@PathVariable("id") String id, WebRequest request) {
+		ModelAndView mav = new ModelAndView("redirect:/workflow/task");
+
+		Map<String, String[]> params = request.getParameterMap();
+		Result result = this.workflowService.complete(id, params);
+		// 把结果放入Session
+		request.setAttribute("result", result, WebRequest.SCOPE_SESSION);
+
 		return mav;
 	}
 }
