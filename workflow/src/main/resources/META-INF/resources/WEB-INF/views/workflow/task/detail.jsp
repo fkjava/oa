@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="my" tagdir="/WEB-INF/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath }"></c:set>
 <!DOCTYPE html>
@@ -80,6 +81,29 @@
 	    	</fieldset>
 	    </form>
 	</div>
+	<style type="text/css">
+		.process-logs .process-log .remark
+		{
+			border-bottom: 1px solid #000;
+		}
+		.process-logs .process-log .remark
+		{
+			text-indent: 20px;
+		}
+	</style>
+	<fieldset class="col-xs-12 process-logs">
+		<legend>流程日志</legend>
+		<c:forEach items="${form.logs }" var="l">
+			<div class="process-log">
+				<div>
+					${l.user.name } 在 <fmt:formatDate value="${l.time }" pattern="yyyy-MM-dd HH:mm"/> 执行了操作：${l.action }
+				</div>
+				<div class="remark">
+					${l.remark }
+				</div>
+			</div>
+		</c:forEach>
+	</fieldset>
 	<script type="text/javascript" src="${ctx }/webjars/momentjs/2.10.3/min/moment-with-locales.min.js"></script>
 	<script type="text/javascript" src="${ctx }/webjars/Eonasdan-bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
 	<script type="text/javascript" src="${ctx }/static/js/workflow.js" charset="UTF-8"></script>

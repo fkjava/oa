@@ -16,10 +16,12 @@ import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.form.FormData;
 import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.impl.form.EnumFormType;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
@@ -30,6 +32,9 @@ import org.fkjava.oa.commons.DatePropertyEditor;
 import org.fkjava.oa.commons.domain.BusinessData;
 import org.fkjava.oa.commons.repository.BusinessDataRepository;
 import org.fkjava.oa.commons.vo.Result;
+import org.fkjava.oa.identity.domain.User;
+import org.fkjava.oa.workflow.dao.ProcessLogRepository;
+import org.fkjava.oa.workflow.domain.ProcessLog;
 import org.fkjava.oa.workflow.service.WorkflowService;
 import org.fkjava.oa.workflow.vo.ProcessForm;
 import org.fkjava.oa.workflow.vo.ProcessImage;
@@ -47,6 +52,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.WebDataBinder;
 
@@ -64,6 +70,8 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 	private TaskService taskService;
 	@Autowired
 	private HistoryService historyService;
+	@Autowired
+	private ProcessLogRepository processLogRepository;
 
 	private ApplicationContext applicationContext;
 
@@ -140,6 +148,7 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 	}
 
 	@Override
+	@Transactional
 	public Result startProcessInstance(String processDefinitionId, Map<String, String[]> params) {
 		// 1.整理请求参数
 		// 请求参数里面，参数的值是一个String[]，不方便使用
@@ -248,6 +257,7 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 	}
 
 	@Override
+	@Transactional
 	public Result complete(String taskId, Map<String, String[]> params) {
 		// 1.跟启动流程实例一样，要整理参数
 		Map<String, Object> variables = new HashMap<>();
@@ -278,11 +288,14 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 		ProcessForm form = this.getStartFormById(definition.getId());
 		this.saveBusinessData(form, params);
 
+		// 在完成任务之前，查询任务的表单数据，用于记录流程跟踪信息
+		TaskFormData formData = this.formService.getTaskFormData(taskId);
+
 		// 6.完成任务
 		this.taskService.complete(taskId, variables);
 
 		// 7.记录流程跟踪信息
-		this.log(definition, instance, task, remark);
+		this.log(definition, instance, task, formData, variables, remark);
 
 		Result result = Result.of(Result.STATUS_OK);
 		return result;
@@ -378,12 +391,75 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 	}
 
 	// 记录流程跟踪信息
-	private void log(ProcessDefinition processDefinition, ProcessInstance instance, String remark) {
-		// TODO 流程跟踪信息暂时未记录
+	// 启动流程实例使用的
+	private void log(ProcessDefinition definition, ProcessInstance instance, String remark) {
+		User user = new User();
+		user.setId(Authentication.getAuthenticatedUserId());
+		String processDefinitionId = definition.getId();
+		String processInstanceId = instance.getId();
+		String action = "启动流程";
+
+		ProcessLog log = new ProcessLog();
+		log.setAction(action);
+		log.setProcessDefinitionId(processDefinitionId);
+		log.setProcessInstanceId(processInstanceId);
+		log.setRemark(remark);
+		log.setTime(new Date());
+		log.setUser(user);
+
+		this.processLogRepository.save(log);
 	}
 
-	private void log(ProcessDefinition definition, ProcessInstance instance, Task task, String remark) {
-		// TODO 记录任务的完成日志
+	// 完成任务使用的
+	private void log(ProcessDefinition definition, //
+			ProcessInstance instance, //
+			Task task, //
+			FormData formData, //
+			Map<String, Object> variables, //
+			String remark) {
+		User user = new User();
+		user.setId(Authentication.getAuthenticatedUserId());
+		String processDefinitionId = definition.getId();
+		String processInstanceId = instance.getId();
+
+		// 不同的任务执行的操作可能不同
+		String action = "完成任务";
+		// TaskFormData formData = this.formService.getTaskFormData(task.getId());
+		for (FormProperty fp : formData.getFormProperties()) {
+			String propertyId = fp.getId();
+			if (fp.getType() instanceof EnumFormType) {
+				// 判断表单属性的ID是否在用户提交的变量里面
+				if (variables.containsKey(propertyId)) {
+					EnumFormType type = (EnumFormType) fp.getType();
+					// key是中文的，表示执行什么操作
+					// 现在根据属性的id，获取到了多个键值对，值跟variables的操作值相同，就把key取出来
+					@SuppressWarnings("unchecked")
+					Map<String, String> values = (Map<String, String>) type.getInformation("values");
+					String value = String.valueOf(variables.get(propertyId));
+					for (Map.Entry<String, String> kv : values.entrySet()) {
+						// 键值对的值，是否和用户提交的值相同
+						if (kv.getValue().equals(value)) {
+							// 把key作为用户的操作
+							action = kv.getKey();
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		ProcessLog log = new ProcessLog();
+		log.setAction(action);
+		log.setProcessDefinitionId(processDefinitionId);
+		log.setProcessInstanceId(processInstanceId);
+		log.setRemark(remark);
+		log.setTime(new Date());
+		log.setUser(user);
+		log.setTaskId(task.getId());
+		log.setTaskName(task.getName());
+
+		this.processLogRepository.save(log);
 	}
 
 	@Override
@@ -461,6 +537,11 @@ public class WorkflowServiceImpl implements WorkflowService, ApplicationContextA
 		// 查询业务数据
 		BusinessData data = this.getBusinessData(tf.getDefinition(), tf.getInstance().getBusinessKey());
 		tf.setBusinessData(data);
+
+		// 查询流程跟踪信息
+		List<ProcessLog> logs = this.processLogRepository//
+				.findByProcessInstanceIdOrderByTimeAsc(task.getProcessInstanceId());
+		tf.setLogs(logs);
 
 		return tf;
 	}

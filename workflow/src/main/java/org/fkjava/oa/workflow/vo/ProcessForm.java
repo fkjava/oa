@@ -1,7 +1,10 @@
 package org.fkjava.oa.workflow.vo;
 
+import java.util.List;
+
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.fkjava.oa.workflow.domain.ProcessLog;
 
 /**
  * VO : Value Object，用于封装在各层之间传递的数据。
@@ -27,6 +30,10 @@ public class ProcessForm {
 	 * 表单文件的文件名
 	 */
 	private String formKey;
+	/**
+	 * 流程跟踪信息
+	 */
+	private List<ProcessLog> logs;
 
 	public ProcessDefinition getDefinition() {
 		return definition;
@@ -58,5 +65,13 @@ public class ProcessForm {
 
 	public void setFormKey(String formKey) {
 		this.formKey = formKey;
+	}
+
+	public List<ProcessLog> getLogs() {
+		return logs;
+	}
+
+	public void setLogs(List<ProcessLog> logs) {
+		this.logs = logs;
 	}
 }
